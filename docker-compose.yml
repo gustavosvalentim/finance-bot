@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: finance_management
+      DATABASE_USER: usr_finance_bot
+      DATABASE_PASSWORD: postgres
+    links:
+      - postgres
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:12
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: finance_management
+      POSTGRES_USER: usr_finance_bot
+      POSTGRES_PASSWORD: postgres
