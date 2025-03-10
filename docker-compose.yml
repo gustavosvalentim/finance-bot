@@ -22,7 +22,12 @@ services:
     image: postgres:12
     ports:
       - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: finance_management
       POSTGRES_USER: usr_finance_bot
       POSTGRES_PASSWORD: postgres
+
+volumes:
+  postgres_data:
