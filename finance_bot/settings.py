@@ -29,13 +29,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-API_KEY = "1234567890"
+API_KEY = os.environ.get("API_KEY", "1234567890") 
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'finance_bot.finance',
+    'finance_bot.agents',
     'drf_spectacular',
     'rest_framework',
     'django.contrib.admin',
@@ -84,7 +85,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get("DATABASE_NAME", "finance_management"),
-        'USER': os.environ.get("DATABASE_USER", "postgres"),
+        'USER': os.environ.get("DATABASE_USER", "usr_finance_bot"),
         'PASSWORD': os.environ.get("DATABASE_PASSWORD", "postgres"),
         'HOST': os.environ.get("DATABASE_HOST", "localhost"),
         'PORT': os.environ.get("DATABASE_PORT", "5432"),

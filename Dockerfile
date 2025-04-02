@@ -1,11 +1,15 @@
 # Use the official Python image from the Docker Hub
 FROM python:3.9-slim as base
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
 # Set the working directory
 WORKDIR /app
+
+COPY pyproject.toml .
+
+RUN pip install uv
+RUN uv sync --frozen --no-install-project --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy the project files
 COPY . .

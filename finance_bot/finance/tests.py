@@ -1,12 +1,14 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 
+from finance_bot import settings
 from finance_bot.finance import models
 
 
 class CategoryTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.client.credentials(HTTP_X_API_KEY=settings.API_KEY)
         self.user = models.User.objects.create(name='Test user')
         self.category = models.Category.objects.create(name='Test category', limit=1000, is_income=False, user=self.user)
 

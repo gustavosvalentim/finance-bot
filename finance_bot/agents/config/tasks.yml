@@ -1,0 +1,62 @@
+transactions_task:
+  description: Transform the user's prompt into a structured JSON format for the backend application.
+  expected_output: >
+    The output structure must be JSON formatted with the following fields about:
+        - description: The description of the operation the user wants to perform.
+        - amount: The amount of money involved in the transaction.
+        - time: The current date and time
+        - category: The category of the transaction (e.g., groceries, rent, etc.)
+        - operation: The type of operation to perform on the backend application, read the `Operations` section for more details.
+    
+    Operations:
+        - create: Create a new transaction.
+        - read: Read an existing transaction.
+        - update: Update an existing transaction.
+        - delete: Delete an existing transaction.
+
+        Unless the user specifically requests to read, update, or delete a transaction, the default operation is to create a new transaction.
+
+        Examples:
+          - rent 500: should be transformed into:
+            {
+              "description": "rent",
+              "amount": 500,
+              "time": "2023-10-01T12:00:00Z",
+              "category": "housing",
+              "operation": "create"
+            }
+          - groceries 200: should be transformed into:
+            {
+              "description": "groceries",
+              "amount": 200,
+              "time": "2023-10-01T12:00:00Z",
+              "category": "food",
+              "operation": "create"
+            }
+          - read rent: should be transformed into:
+            {
+              "description": "rent",
+              "amount": null,
+              "time": null,
+              "category": null,
+              "operation": "read"
+            }
+          - update groceries 150: should be transformed into:
+            {
+              "description": "groceries",
+              "amount": 150,
+              "time": null,
+              "category": null,
+              "operation": "update"
+            }
+          - delete rent: should be transformed into:
+            {
+              "description": "rent",
+              "amount": null,
+              "time": null,
+              "category": null,
+              "operation": "delete"
+            }
+
+    The user prompt that needs to be processed is: {prompt}
+  agent: transactions
