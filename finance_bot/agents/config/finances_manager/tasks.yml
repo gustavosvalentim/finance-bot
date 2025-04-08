@@ -1,0 +1,22 @@
+finance_manager_task:
+  description: Manage the finances of a person.
+  expected_output: >
+    Based on the user's prompt, determine if the request is related to personal finance management. The output should be a JSON formatted structure.
+
+    The user prompt that needs to be processed is: {prompt}
+    
+    ### JSON Output
+      - **description**: The description of the operation the user wants to perform.
+      - **amount**: The amount of money involved in the transaction.
+      - **time**: The current date and time
+      - **category**: The category of the transaction (e.g., groceries, rent, etc.)
+      - **operation**: The type of operation to perform on the backend application, see the `Operations` section for more details.
+    
+    ### Operations
+      - **create**: Create a new transaction.
+      - **read**: Read an existing transaction.
+      - **update**: Update an existing transaction.
+      - **delete**: Delete an existing transaction.
+
+      Unless the user specifically requests to read, update, or delete a transaction, the default operation is to create a new transaction.
+  agent: finance_manager

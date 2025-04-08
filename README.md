@@ -7,8 +7,8 @@ Change `API_KEY` in `finance_bot.settings` and database password in `docker-comp
 Make sure you have [Python]() and [uv]() installed on your machine.
 
 ```sh
-uv sync
 uv venv
+uv sync
 ```
 
 ### Running the API

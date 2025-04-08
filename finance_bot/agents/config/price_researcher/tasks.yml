@@ -1,0 +1,10 @@
+price_researcher_task:
+  description: Find out the product {product}
+  expected_output: >
+    All the details of a specifically chosen product, including its price on various e-commerce websites.
+
+    ### JSON Output
+      - **product_name**: The name of the product to research.
+      - **price**: The price of the product.
+      - **link**: The link to the product in the store.
+  agent: price_researcher
