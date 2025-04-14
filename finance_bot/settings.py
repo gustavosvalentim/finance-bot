@@ -84,12 +84,16 @@ WSGI_APPLICATION = 'finance_bot.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("DATABASE_NAME", "finance_management"),
+        'NAME': os.environ.get("DATABASE_NAME", "finances"),
         'USER': os.environ.get("DATABASE_USER", "usr_finance_bot"),
         'PASSWORD': os.environ.get("DATABASE_PASSWORD", "postgres"),
         'HOST': os.environ.get("DATABASE_HOST", "localhost"),
         'PORT': os.environ.get("DATABASE_PORT", "5432"),
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': 'db.sqlite'
+    # }
 }
 
 

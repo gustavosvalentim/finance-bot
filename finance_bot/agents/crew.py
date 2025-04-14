@@ -1,155 +1,76 @@
 import os
 
-from crewai import Agent, Task, Crew, Process
-from crewai.project import CrewBase, agent, task, crew
-from crewai_tools import ScrapeWebsiteTool
+from crewai import Crew, Agent, Task
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel
+
+from .tools.search_category_tool import SearchCategoryTool
+from .tools.search_user_categories_tool import SearchUserCategoriesTool
+from .tools.create_category_tool import CreateCategoryTool
+from .tools.create_transaction_tool import CreateTransactionTool
 
 
-os.environ["OPENAI_API_KEY"] = "1234567890"  # This is not needed for ollama
-                                             # but it's required for ChatOpenAI or other models
+# LLM configuration
+# This is needed for ChatOpenAI
+# Even though it won't be used for ollama
+os.environ['OPENAI_API_KEY'] = 'api-pj-123'
 
+llm = ChatOpenAI(model="ollama/llama3.3", base_url="http://localhost:11434")
 
-class OrchestrationOutput(BaseModel):
-    """Output model for the orchestration agent."""
+# Agent configuration
+verbose = True
 
-    agent_name: str
-    prompt: str
-    description: str
+# tools
+search_category_tool = SearchCategoryTool() # search by category name
+search_user_categories_tool = SearchUserCategoriesTool()
+create_category_tool = CreateCategoryTool()
+create_transaction_tool = CreateTransactionTool()
 
-@CrewBase
-class OrchestrationCrew:
-    """Crew of agents for finance management and organization."""
+transactions_agent = Agent(
+    role="Finance Management Agent",
+    goal="Manage and organize financial transactions.",
+    verbose=verbose,
+    tools=[search_category_tool, search_user_categories_tool, create_category_tool, create_transaction_tool],
+    backstory="""
+        The Finance Management Agent is designed to assist users in managing their financial transactions.
+        It can help categorize expenses, track income, and provide insights into spending habits.
+    """,
+    llm=llm,
+)
 
-    llm = ChatOpenAI(model="ollama/llama3.3", base_url="http://localhost:11434")
+transactions_task = Task(
+    description="Organize and categorize financial transactions.",
+    expected_output="""
+        Process the user input {prompt}.
 
-    # Paths to YAML configuration files
-    agents_config = 'config/orchestrator/agents.yml'
-    tasks_config = 'config/orchestrator/tasks.yml'
+        The user identification is {user}.
 
-    @agent
-    def orchestrator(self) -> Agent:
-        """Orchestrator agent for managing the crew."""
+        If the user is trying to create a transaction, the agent should follow the steps below:
+            1. Search for the category of the transaction using the SearchCategoryTool.
+            2. If the category was not found, the agent should create a new category using the CreateCategoryTool.
+            3. Create the transaction using the CreateTransactionTool, using the Category ID as category instead of the name.
+            4. Output a message saying that the transaction was created successfully, including the transaction description and ID.
 
-        return Agent(
-            config=self.agents_config['orchestrator'],
-            llm=self.llm,
-        )
-    
-    @task
-    def orchestrator_task(self) -> Task:
-        """Task for the orchestrator agent."""
+        If the user is trying to create a category, the agent should follow the steps below:
+            1. Search for the category in the database using the SearchCategoryTool.
+            2. If the category was not found, create the category using the CreateCategoryTool.
 
-        return Task(
-            config=self.tasks_config['orchestration_task'],
-            output_json=OrchestrationOutput,
-            llm=self.llm,
-        )
-    
-    @crew
-    def crew(self) -> Crew:
-        """Crew of agents for finance management."""
+        If the user wants to list all his categories, the agent should follow the steps below:
+            1. Search for the categories in the database using the SearchUserCategoriesTool.
+            2. Output a list with all the categories found.
+            3. If no categories were found, output a message saying that no categories were found.
 
-        return Crew(
-            agents=[self.orchestrator()],
-            tasks=[self.orchestrator_task()],
-            verbose=True,
-        )
+        Observations:
+            - If the user wants to list his categories, don't create anything, only list the categories.
+            - After you use the SearchUserCategoriesTool, output the result to the user and stop the task.
+            - Try to match the category name even if the user misspells it.
+    """,
+    agent=transactions_agent,
+)
 
-
-class FinanceManagementOutput(BaseModel):
-    """Output model for the finance management agent."""
-
-    description: str
-    amount: float
-    time: str
-    category: str
-    operation: str
-
-
-@CrewBase
-class FinanceManagementCrew:
-    """Crew of agents for finance management and organization."""
-
-    llm = ChatOpenAI(model="ollama/llama3.1", base_url="http://localhost:11434")
-
-    agents_config = 'config/finances_manager/agents.yml'
-    tasks_config = 'config/finances_manager/tasks.yml'
-
-    @agent
-    def finance_manager(self) -> Agent:
-        """Finance manager agent for managing finances."""
-
-        return Agent(
-            config=self.agents_config['finance_manager'],
-            llm=self.llm,
-        )
-
-    @task
-    def finance_manager_task(self) -> Task:
-        """Task for the finance manager agent."""
-
-        return Task(
-            config=self.tasks_config['finance_manager_task'],
-            output_json=FinanceManagementOutput,
-            llm=self.llm,
-        )
-
-    @crew
-    def crew(self) -> Crew:
-        """Crew of agents for finance management."""
-
-        return Crew(
-            agents=self.agents,
-            tasks=self.tasks,
-            verbose=True,
-        )
-
-
-class PriceResearchOutput(BaseModel):
-    """Output model for the price research agent."""
-
-    product_name: str
-    price: float
-    link: str
-
-
-@CrewBase
-class PriceResearchCrew:
-    """Crew of agents for price research and analysis."""
-
-    llm = ChatOpenAI(model="ollama/llama3.1", base_url="http://localhost:11434")
-
-    agents_config = 'config/price_researcher/agents.yml'
-    tasks_config = 'config/price_researcher/tasks.yml'
-
-    @agent
-    def price_researcher(self) -> Agent:
-        """Price researcher agent for conducting price research."""
-
-        return Agent(
-            config=self.agents_config['price_researcher'],
-            llm=self.llm,
-            tools=[ScrapeWebsiteTool()],
-        )
-
-    @task
-    def price_research_task(self) -> Task:
-        """Task for the price researcher agent."""
-
-        return Task(
-            config=self.tasks_config['price_researcher_task'],
-            output_json=PriceResearchOutput,
-            llm=self.llm,
-        )
-
-    @crew
-    def crew(self) -> Crew:
-        """Crew of agents for price research."""
-
-        return Crew(
-            agents=self.agents,
-            tasks=self.tasks,
-            verbose=True,
-        )
+crew = Crew(
+    name="Finance Management Crew",
+    agents=[transactions_agent],
+    tasks=[transactions_task],
+    memory=True,
+    verbose=verbose,
+)

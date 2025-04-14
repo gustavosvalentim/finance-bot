@@ -14,6 +14,8 @@ uv sync
 ### Running the API
 
 ```sh
+docker compose up postgres
+
 python manage.py migrate
 python manage.py runserver
 ```
@@ -21,5 +23,5 @@ python manage.py runserver
 ### Chat mode
 
 ```sh
-python manage.py run_agents
+python manage.py chat
 ```

@@ -10,7 +10,7 @@ services:
     environment:
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
-      DATABASE_NAME: finance_management
+      DATABASE_NAME: finances
       DATABASE_USER: usr_finance_bot
       DATABASE_PASSWORD: postgres
     links:
@@ -25,7 +25,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: finance_management
+      POSTGRES_DB: finances
       POSTGRES_USER: usr_finance_bot
       POSTGRES_PASSWORD: postgres
 
