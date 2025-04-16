@@ -1,6 +1,6 @@
 # finance_bot
 
-Change `API_KEY` in `finance_bot.settings` and database password in `docker-compose.yml`.
+Bot responsible for managing and organizing personal finances.
 
 ## Setup
 
@@ -26,3 +26,7 @@ python manage.py runserver
 python manage.py migrate
 python manage.py chat
 ```
+
+## Deploy
+
+Change `API_KEY` in `finance_bot.settings` and database password in `docker-compose.yml`.
