@@ -23,5 +23,6 @@ python manage.py runserver
 ### Chat mode
 
 ```sh
+python manage.py migrate
 python manage.py chat
 ```
