@@ -13,7 +13,7 @@ class Command(BaseCommand):
             }
         }
         messages = [SystemMessage(content="""
-            The user identification is 51994709234.
+            The user identification is +5511999999999.
 
             If the user is trying to create a transaction, the agent should follow the steps below:
                 1. Search for the category of the transaction using the SearchCategoryTool.
