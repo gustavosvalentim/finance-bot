@@ -33,10 +33,16 @@ class Command(BaseCommand):
             Observations:
                 - If the user wants to list his categories, don't create anything, only list the categories.
                 - After you use the SearchUserCategoriesTool, output the result to the user and stop the task.
-                - Try to match the category name even if the user misspells it."""),
-            HumanMessage(content="What are my categories?")]
-        output = agent_executor.invoke({'messages': messages}, config=config)
-        
-        for message in output['messages']:
-            print(message.content)
-            print("===" * 20, end="\n\n")
+                - Try to match the category name even if the user misspells it.""")]
+
+        while True:
+            try:
+                user_input = input("You: ")
+                output = agent_executor.invoke({'messages': [*messages, HumanMessage(user_input)]}, config=config)
+                
+                for message in output['messages']:
+                    print(message.content)
+                    print("===" * 20, end="\n\n")
+            except KeyboardInterrupt:
+                print("\nExiting...")
+                break
