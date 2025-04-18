@@ -1,23 +1,24 @@
-from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
+import os
+
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
 # import tools
-from finance_bot.agents.tools import (
-    create_category_tool,
-    create_transaction_tool,
-    search_user_categories_tool,
-    search_category_tool,
+from finance_bot.langchain_bot.tools import (
+    CreateCategoryTool,
+    CreateTransactionTool,
+    SearchUserCategoriesTool,
+    SearchCategoryTool,
 )
 
 
 memory = MemorySaver()
-model = ChatOllama(model="llama3.3", base_url="http://localhost:11434")
+model = ChatOpenAI(api_key=os.environ["OPENAI_API_KEY"], model="gpt-4o-mini")
 tools = [
-    create_category_tool.CreateCategoryTool(),
-    create_transaction_tool.CreateTransactionTool(),
-    search_user_categories_tool.SearchUserCategoriesTool(),
-    search_category_tool.SearchCategoryTool(),
+    CreateCategoryTool(),
+    CreateTransactionTool(),
+    SearchUserCategoriesTool(),
+    SearchCategoryTool(),
 ]
-agent_executor = create_react_agent(model, tools, checkpoint=memory)
+agent_executor = create_react_agent(model, tools, checkpointer=memory)

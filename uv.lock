@@ -973,6 +973,7 @@ dependencies = [
     { name = "langchain-openai" },
     { name = "langgraph" },
     { name = "psycopg2-binary" },
+    { name = "python-dotenv" },
     { name = "selenium" },
     { name = "webdriver-manager" },
 ]
@@ -990,6 +991,7 @@ requires-dist = [
     { name = "langchain-openai", specifier = ">=0.2.14" },
     { name = "langgraph", specifier = ">=0.3.30" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "selenium", specifier = ">=4.30.0" },
     { name = "webdriver-manager", specifier = ">=4.0.2" },
 ]
