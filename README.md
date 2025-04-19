@@ -74,6 +74,18 @@ python manage.py migrate
 
 ---
 
+## ▶️ Running the Bot
+
+After completing the setup, you can run Finance Bot in a terminal for testing purposes:
+
+```sh
+python manage.py langchain_chat
+```
+
+This will start the Langchain-powered interactive shell where you can simulate conversations and test the bot's responses locally before deploying it to a messaging platform like WhatsApp or Telegram.
+
+---
+
 ## 📱 Messaging Platform Integration
 
 Finance Bot can be integrated with:
