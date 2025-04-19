@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Type
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
@@ -63,6 +64,7 @@ class CreateTransactionTool(BaseTool):
 class SearchCategoryToolInput(BaseModel):
     """Input schema for SearchCategoryTool."""
     category_name: str = Field(description="Name of the category to search")
+    user: str = Field(description="User who owns the category")
 
 
 class SearchCategoryTool(BaseTool):
@@ -70,14 +72,16 @@ class SearchCategoryTool(BaseTool):
     description: str = "Searches for categories in the database."
     args_schema: Type[BaseModel] = SearchCategoryToolInput
 
-    def _run(self, category_name: str) -> str:
+    def _run(self, category_name: str, user: str) -> str:
         """Search for a category by name."""
-        categories = Category.objects.filter(name__icontains=category_name)
+        categories = Category.objects.filter(name__icontains=category_name, user=user)
         if categories.exists():
             category = categories.first()
             return f"Category ID: {category.id}\nCategory Name: {category.name}\n"
         else:
             return f"No categories found with the name '{category_name}'."
+
+
 class SearchUserCategoriesToolInput(BaseModel):
     """Search for all users categories."""
     user: str = Field(description="Name of the user that owns the categories.")
@@ -98,5 +102,39 @@ class SearchUserCategoriesTool(BaseTool):
             output += f"Category Name: {category.name}\n"
             output += f"Category Is Income: {category.is_income}\n"
             output += f"Category Amount Limit: {category.limit}\n"
+
+        return output
+
+
+class SearchTransactionsToolInput(BaseModel):
+    """Search for all users transactions."""
+    user: str = Field(description="Name of the user that owns the transactions.")
+    start_date: datetime = Field(description="Start date to search for transactions.")
+    end_date: datetime = Field(description="End date to search for transactions.")
+
+
+class SearchTransactionsTool(BaseTool):
+    """Searches the transactions from a user."""
+    name: str = "SearchTransactionsTool"
+    description: str = "Searches the transactions from a user."
+    args_schema: Type[BaseModel] = SearchTransactionsToolInput
+
+    def _run(self, user: str, start_date: datetime, end_date: datetime) -> str:
+        filters = {'user': user}
+
+        if start_date:
+            filters['date__gte'] = start_date
+        
+        if end_date:
+            filters['date__lte'] = end_date
+
+        transactions = Transaction.objects.filter(**filters)
+        output = ""
+
+        for transaction in transactions:
+            output += f"Transaction ID: {transaction.id}\n"
+            output += f"Transaction Amount: {transaction.amount}\n"
+            output += f"Transaction Date: {transaction.date}\n"
+            output += f"Transaction Description: {transaction.description}\n"
 
         return output
