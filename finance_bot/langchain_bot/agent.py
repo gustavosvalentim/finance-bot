@@ -33,10 +33,10 @@ class FinanceAgent:
             'thread_id': '1234567890',
         }
     }
-    system_prompt = SystemMessage(content=f"""
-        The user identification is +5511999999999.
-                                  
-        Now is {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.
+    system_prompt = """
+        The user identification is {user_id}.
+
+        Now is {now}.
 
         If the user is trying to create a transaction, the agent should follow the steps below:
             1. Search for the category of the transaction using the SearchCategoryTool.
@@ -62,10 +62,16 @@ class FinanceAgent:
         Observations:
             - If the user wants to list his categories, don't create anything, only list the categories.
             - After you use the SearchUserCategoriesTool, output the result to the user and stop the task.
-            - Try to match the category name even if the user misspells it.""")
+            - Try to match the category name even if the user misspells it."""
 
     def invoke(self, query: str) -> str:
+        """Invoke the agent with the given query."""
+
+        system_prompt_formatted = self.system_prompt.format(
+            user_id=os.environ["USER_ID"],
+            now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        )
         return self.agent_executor.invoke(
-            {'messages': [self.system_prompt, HumanMessage(content=query)]},
+            {'messages': [SystemMessage(content=system_prompt_formatted), HumanMessage(content=query)]},
             config=self.default_config,
         )

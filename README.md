@@ -60,11 +60,10 @@ Copy the example environment file and edit it:
 cp .env.example .env
 ```
 
-Then, open the `.env` file and **set your OpenAI API key**:
+Then, open the `.env` file and **set the environment variables**:
 
-```
-OPENAI_API_KEY=your-key-here
-```
+- **USER_ID**: A user identification to use the chat, this is the user identification that will be stored in the database. The max limit of characters is 14.
+- **OPENAI_API_KEY**: Your OPENAI API key.
 
 ### 5. Run database migrations
 
