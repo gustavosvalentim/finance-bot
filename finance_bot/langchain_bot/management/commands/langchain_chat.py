@@ -18,9 +18,7 @@ class Command(BaseCommand):
 
                 output = agent.invoke(user_input)
                 
-                for message in output['messages']:
-                    print(message.content)
-                    print("===" * 20, end="\n\n")
+                print(f"Agent: {output['messages'][-1].content}")
             except KeyboardInterrupt:
                 print("\nExiting...")
                 break

@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Type
+from django.utils import timezone
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
@@ -31,7 +32,7 @@ class CreateTransactionToolInput(BaseModel):
     user: str = Field(description="User that owns the transaction.")
     category: int = Field(description="ID of the category")
     amount: float = Field(description="Amount of the transaction.")
-    date: str = Field(description="Date of the transaction in YYYY-MM-DD format.")
+    date: datetime = Field(description="Date of the transaction in YYYY-MM-DD format.")
     description: str = Field(description="The transaction description")
 
 
@@ -48,16 +49,19 @@ class CreateTransactionTool(BaseTool):
         user: str,
         category: int,
         amount: float,
-        date: str,
+        date: datetime,
         description: str
     ) -> str:
+        """Create a new transaction."""
+
         transaction = Transaction.objects.create(
             user=user,
             category_id=category,
             amount=amount,
-            date=date,
+            date=timezone.make_aware(date),
             description=description
         )
+
         return f"Transaction created with ID {transaction.id}"
 
 
@@ -109,6 +113,7 @@ class SearchUserCategoriesTool(BaseTool):
 class SearchTransactionsToolInput(BaseModel):
     """Search for all users transactions."""
     user: str = Field(description="Name of the user that owns the transactions.")
+    category: str = Field(default=None, description="Name of the category to search for transactions.")
     start_date: datetime = Field(description="Start date to search for transactions.")
     end_date: datetime = Field(description="End date to search for transactions.")
 
@@ -119,14 +124,19 @@ class SearchTransactionsTool(BaseTool):
     description: str = "Searches the transactions from a user."
     args_schema: Type[BaseModel] = SearchTransactionsToolInput
 
-    def _run(self, user: str, start_date: datetime, end_date: datetime) -> str:
+    def _run(self, user: str, category: str, start_date: datetime, end_date: datetime) -> str:
+        """Search for transactions by user and date range."""
+
         filters = {'user': user}
 
         if start_date:
-            filters['date__gte'] = start_date
+            filters['date__gte'] = timezone.make_aware(start_date)
         
         if end_date:
-            filters['date__lte'] = end_date
+            filters['date__lte'] = timezone.make_aware(end_date)
+
+        if category:
+            filters['category__name__icontains'] = category
 
         transactions = Transaction.objects.filter(**filters)
         output = ""

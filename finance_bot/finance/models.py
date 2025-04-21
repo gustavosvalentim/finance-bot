@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 
 
@@ -27,5 +28,5 @@ class Transaction(models.Model):
     user = models.CharField(max_length=14) 
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     amount = models.FloatField(null=True)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=datetime.now, blank=True, null=True)
     description = models.TextField(null=True)
