@@ -1,10 +1,11 @@
 from datetime import datetime
+import logging
 from typing import Type
 from django.utils import timezone
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
-
+from finance_bot.langchain_bot.logging import get_logger
 
 class CreateCategoryToolInput(BaseModel):
     """Input schema for CreateCategoryTool."""
@@ -19,6 +20,10 @@ class CreateCategoryTool(BaseTool):
 
     def _run(self, user: str, category_name: str) -> str:
         """Create a new category."""
+
+        logger = get_logger('CreateCategoryTool')
+
+        logger.debug(f"Creating category '{category_name}' for user '{user}'")
         
         category = Category.objects.get_or_create(user=user, name=category_name)
 
@@ -54,6 +59,15 @@ class CreateTransactionTool(BaseTool):
     ) -> str:
         """Create a new transaction."""
 
+        logger = get_logger('CreateTransactionTool')
+
+        logger.debug(f"Creating transaction",
+                          f"User: {user}\n"
+                          f"Category ID: {category}\n "
+                          f"Amount: {amount}\n "
+                          f"Date: {date}\n "
+                          f"Description: {description}\n")
+
         transaction = Transaction.objects.create(
             user=user,
             category_id=category,
@@ -78,6 +92,11 @@ class SearchCategoryTool(BaseTool):
 
     def _run(self, category_name: str, user: str) -> str:
         """Search for a category by name."""
+
+        logger = get_logger('SearchCategoryTool')
+
+        logger.debug(f"Searching for category '{category_name}' for user '{user}'")
+
         categories = Category.objects.filter(name__icontains=category_name, user=user)
         if categories.exists():
             category = categories.first()
@@ -127,6 +146,8 @@ class SearchTransactionsTool(BaseTool):
     def _run(self, user: str, category: str, start_date: datetime, end_date: datetime) -> str:
         """Search for transactions by user and date range."""
 
+        logger = get_logger('SearchTransactionsTool')
+
         filters = {'user': user}
 
         if start_date:
@@ -138,6 +159,8 @@ class SearchTransactionsTool(BaseTool):
         if category:
             filters['category__name__icontains'] = category
 
+        logger.debug(f"Searching for transactions for user '{user}' with filters: {filters}")
+
         transactions = Transaction.objects.filter(**filters)
         output = ""
 
@@ -148,3 +171,24 @@ class SearchTransactionsTool(BaseTool):
             output += f"Transaction Description: {transaction.description}\n"
 
         return output
+
+
+class UpdateTransactionToolInput(BaseModel):
+    """Search for all users categories."""
+    user: str = Field(description="Name of the user that owns the categories.")
+    transaction: int = Field(description="Name of the transaction to update.")
+    amount: int = Field(description="New amount of the transaction.")
+
+
+class UpdateTransactionTool(BaseTool):
+    """Updates a transaction."""
+    name: str = "UpdateTransactionTool"
+    description: str = "Updates a transaction."
+    args_schema: Type[BaseModel] = UpdateTransactionToolInput
+
+    def _run(self, user: str, transaction: int, amount: int) -> str:
+        transaction = Transaction.objects.get(id=transaction, user=user)
+        transaction.amount = amount
+        transaction.save()
+
+        return "Transaction updated successfully."
