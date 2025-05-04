@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 output = agent.invoke(os.environ.get("USER_ID"), os.environ.get("USER_NICKNAME"), user_input)
 
                 for message in output["messages"]:
-                    logger.Debug(message)    
+                    logger.debug(message)
                 
                 print(f"Agent: {output['messages'][-1].content}")
             except KeyboardInterrupt:
