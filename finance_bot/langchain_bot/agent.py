@@ -13,10 +13,10 @@ from finance_bot.langchain_bot.tools import (
     SearchUserCategoriesTool,
     SearchCategoryTool,
     SearchTransactionsTool,
-    UpdateCategoryTool,
+    # UpdateCategoryTool,
     UpdateTransactionTool,
-    DeleteCategoryTool,
-    DeleteTransactionTool,
+    # DeleteCategoryTool,
+    # DeleteTransactionTool,
 )
 
 
@@ -29,10 +29,10 @@ class FinanceAgent:
         SearchUserCategoriesTool(),
         SearchCategoryTool(),
         SearchTransactionsTool(),
-        UpdateCategoryTool(),
+        # UpdateCategoryTool(),
         UpdateTransactionTool(),
-        DeleteCategoryTool(),
-        DeleteTransactionTool(),
+        # DeleteCategoryTool(),
+        # DeleteTransactionTool(),
     ]
     default_config = {
         'configurable': {
@@ -194,6 +194,52 @@ class FinanceAgent:
         - Se sucesso, diga algo como:
         "Você gastou R$ 310,00 com transporte este mês 🚙"
         - Se não houver registros, diga: "Não encontrei nenhuma transação com essa categoria nesse período."
+
+        ---
+        ### UpdateTransactionTool
+        Atualiza uma transação existente.
+
+        *Entrada esperada:*
+        - "user": "<ID do usuário>",
+        - "transaction": <ID da transação>,
+        - "amount": <novo valor numérico>
+
+        *Fluxo passo-a-passo*
+        1. Extrair da mensagem: 
+            - pistas para localizar a transação (data, valor antigo, descrição, categoria, etc.);
+            - novo valor desejado (amount).
+
+        2. Identificar o ID da transação
+            - Se o usuário não informar transaction_id, chame SearchTransactionsTool para listar candidatas.
+            - Se vierem várias, peça ao usuário que escolha (“É a de 10/05 almoço? ou a de 11/05 Uber?”).
+
+        3. Chamar UpdateTransactionTool com
+            - "user": <ID>,
+            - "transaction": <ID confirmado>,
+            - "amount": <novo valor>
+        
+        4. Responder ao usuário
+            - Sucesso → “Prontinho! Atualizei a transação #1234 para R$ 250,00 😉”
+            - Falha (não encontrou) → “Não achei essa transação. Pode me dar mais detalhes?”
+
+        *Exemplos de uso:*
+        1. **“Muda o valor da gasolina de ontem para 180”**
+        1) SearchTransactionsTool {{ "user": <ID>, "start_date":"YYYY-MM-DD", "end_date":"YYYY-MM-DD", "categoria":"gasolina" }} → recebe lista → 
+        2) pede confirmação se houver mais de uma → 
+        3) UpdateTransactionTool
+        
+        2. **“Atualize a transação 9876 para 300"**
+        1) Chame UpdateTransactionTool com {{ "user": <ID>, "transaction": 9876, "amount": 300 }} 
+
+        3.**"Corrige aquele lanche de R$ 25 para R$ 30"**
+        1) SearchTransactionsTool filtrando por valor ≈ 25 + data recente → 
+        2) se precisar, confirma com o usuário → 
+        3) UpdateTransactionTool       
+        
+        *Algumas regras importantes:*
+        - Use valores positivos sempre.
+        - Se o usuário pedir outro campo além de amount, avise que esta ferramenta só altera o valor e ofereça ajuda extra (“Quer também mudar a categoria ou descrição?”).
+        - Mantenha o mesmo tom amigável e conciso das outras respostas.
 
         ---
 
