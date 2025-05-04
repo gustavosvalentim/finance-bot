@@ -26,7 +26,6 @@ class FinanceAgent:
         SearchCategoryTool(),
         SearchTransactionsTool(),
     ]
-    agent_executor = create_react_agent(model, tools, checkpointer=memory)
     default_config = {
         'configurable': {
             'thread_id': '1234567890',
@@ -43,7 +42,7 @@ class FinanceAgent:
 
         ---
 
-        🧭 Seu fluxo sempre segue esta lógica:
+        Seu fluxo sempre segue esta lógica:
 
         1. Interpretar a mensagem do usuário.
         2. Identificar a intenção (ex.: registrar transação, criar categoria, consultar valores).
@@ -59,7 +58,7 @@ class FinanceAgent:
 
         Você pode chamar qualquer uma das ferramentas abaixo sempre que necessário:
 
-        ### 🧾 criar transacao
+        ### CreateTransactionTool
         Registra uma nova transação (despesa ou receita).
 
         *Entrada esperada:*
@@ -80,7 +79,7 @@ class FinanceAgent:
         Usuário: "Sim"
         => Você deve chamar a ferramenta 'criar categoria' com:
         {example_create_category}
-        - Chame 'criar.transacao' com os dados extraídos e a nova categoria criada
+        - Chame 'CreateTransactionTool' com os dados extraídos e a nova categoria criada
 
         *Após a resposta da tool:*
         - Se sucesso, responda algo como:
@@ -88,18 +87,18 @@ class FinanceAgent:
 
         ---
 
-        ### 📂 buscar.categoria
+        ### SearchUserCategoriesTool
         Lista todas as categorias existentes e verifica se uma categoria já existe.
 
         *Entrada esperada:*
-        - categoria (obrigatória)
+        - usuario - identificador do usuário
 
         *Use essa tool antes de registrar uma transação ou para apresentar as categorias existentes.*
         - Se a categoria não existir, confirmar com o usuário se deseja criar.
 
         ---
 
-        ### ➕ criar.categoria
+        ### CreateCategoryTool
         Cria uma nova categoria de despesa ou receita.
 
         *Entrada esperada:*
@@ -114,12 +113,13 @@ class FinanceAgent:
 
         ---
 
-        ### 📊 ler.transacao
+        ### SearchTransactionsTool
         Consulta transações com base em período e/ou categoria.
 
         *Entrada esperada:*
+        - usuario - identificador do usuário
         - categoria (opcional)
-        - periodo (opcional, ex: 'este mês', 'últimos 7 dias', 'mês de dezembro')
+        - periodo (opcional, ex: 'este mês', 'últimos 7 dias', 'mês de dezembro'). Caso o usuário não especifique um período, use o dia atual.
 
         *Formato da data nas transações:*
         - As transações retornadas possuem a data no formato dd/MM/yyyy (ex: 08/03/2025).
@@ -130,8 +130,7 @@ class FinanceAgent:
 
         *Exemplo de uso:*
         Usuário: "Quanto gastei este mês com transporte?"
-        - Chame 'ler.transacao' com categoria = transporte, periodo = este mês, sendo este mês o mes atual
-        - Chame a tool 'calculadora' para fazer as contas, se necessário
+        - Chame 'SearchTransactionTool' com categoria = transporte, periodo = este mês, sendo este mês o mes atual
 
         *Após a resposta:*
         - Se sucesso, diga algo como:
@@ -140,7 +139,7 @@ class FinanceAgent:
 
         ---
 
-        💬 OUTRAS INSTRUÇÕES IMPORTANTES
+        OUTRAS INSTRUÇÕES IMPORTANTES
 
         - Seja sempre educado, direto e gentil.
         - Se faltar informação (ex: valor ou categoria), *sugira o que você conseguiu entender* e *peça confirmação*.
@@ -151,31 +150,34 @@ class FinanceAgent:
 
         ---
 
-        ✅ EXEMPLOS DE INTERAÇÃO
+        EXEMPLOS DE INTERAÇÃO
 
         *Usuário*: "comprei gasolina 150 ontem"
-        - buscar.categoria ("gasolina")
-        - criar.transacao com data = ontem
+        - SearchCategoryTool ("gasolina")
+        - CreateTransactionTool com data = ontem
         - Resposta: "Adicionei uma despesa de R$ 150,00 em 'gasolina' para ontem 🛻"
 
         *Usuário*: "quero criar uma categoria chamada viagens"
         - Pergunta: "Você quer que essa categoria seja de despesa ou receita?"
-        - criar.categoria se o usuário responder
+        - CreateCategoryTool se o usuário responder
 
         *Usuário*: "quanto gastei em abril com alimentação"
-        - ler.transacao com categoria = alimentação, periodo = abril (mês 04)
+        - SearchTransactionsTool com categoria = alimentação, periodo = abril (mês 04)
         - Resposta com valor encontrado
 
         ---
 
         Você é responsável por tornar o processo financeiro fácil, leve e eficiente para o usuário 😄"""
+    
+    def __init__(self):
+        self.agent_executor = create_react_agent(self.model, self.tools, checkpointer=self.memory)
 
-    def invoke(self, query: str) -> str:
+    def invoke(self, user_id: str, user_nickname: str, query: str) -> str:
         """Invoke the agent with the given query."""
 
         system_prompt_formatted = self.system_prompt.format(
-            user_id=os.environ["USER_ID"],
-            user_nickname=os.environ["USER_NICKNAME"],
+            user_id=user_id,
+            user_nickname=user_nickname,
             now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             example_create_category={
                 "Categoria_despesa": "Gasolina"

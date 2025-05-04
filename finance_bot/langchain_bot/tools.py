@@ -1,5 +1,4 @@
 from datetime import datetime
-import logging
 from typing import Type
 from django.utils import timezone
 from pydantic import BaseModel, Field
@@ -25,7 +24,11 @@ class CreateCategoryTool(BaseTool):
 
         logger.debug(f"Creating category '{category_name}' for user '{user}'")
         
-        category = Category.objects.get_or_create(user=user, name=category_name)
+        category = Category.objects.filter(normalized_name__icontains = category_name.upper()).exists()
+        if category:
+            return f"Category {category_name} already exists"
+        
+        Category.objects.create(user=user, name=category_name)
 
         return f"Category '{category_name}' created successfully."
 
@@ -61,12 +64,12 @@ class CreateTransactionTool(BaseTool):
 
         logger = get_logger('CreateTransactionTool')
 
-        logger.debug(f"Creating transaction",
-                          f"User: {user}\n"
-                          f"Category ID: {category}\n "
-                          f"Amount: {amount}\n "
-                          f"Date: {date}\n "
-                          f"Description: {description}\n")
+        logger.debug(f"Creating transaction"
+                     f"User: {user}\n"
+                     f"Category ID: {category}\n "
+                     f"Amount: {amount}\n "
+                     f"Date: {date}\n "
+                     f"Description: {description}\n")
 
         transaction = Transaction.objects.create(
             user=user,
@@ -97,7 +100,7 @@ class SearchCategoryTool(BaseTool):
 
         logger.debug(f"Searching for category '{category_name}' for user '{user}'")
 
-        categories = Category.objects.filter(name__icontains=category_name, user=user)
+        categories = Category.objects.filter(normalized_name__icontains=category_name.upper(), user=user)
         if categories.exists():
             category = categories.first()
             return f"Category ID: {category.id}\nCategory Name: {category.name}\n"
@@ -133,8 +136,8 @@ class SearchTransactionsToolInput(BaseModel):
     """Search for all users transactions."""
     user: str = Field(description="Name of the user that owns the transactions.")
     category: str = Field(default=None, description="Name of the category to search for transactions.")
-    start_date: datetime = Field(description="Start date to search for transactions.")
-    end_date: datetime = Field(description="End date to search for transactions.")
+    start_date: datetime = Field(default=None, description="Start date to search for transactions.")
+    end_date: datetime = Field(default=None, description="End date to search for transactions.")
 
 
 class SearchTransactionsTool(BaseTool):
@@ -143,10 +146,14 @@ class SearchTransactionsTool(BaseTool):
     description: str = "Searches the transactions from a user."
     args_schema: Type[BaseModel] = SearchTransactionsToolInput
 
-    def _run(self, user: str, category: str, start_date: datetime, end_date: datetime) -> str:
+    def _run(self, user: str, category: str | None, start_date: datetime, end_date: datetime) -> str:
         """Search for transactions by user and date range."""
 
         logger = get_logger('SearchTransactionsTool')
+
+        if not user:
+            logger.error("User can't be empty or null")
+            return "No transactions were found."
 
         filters = {'user': user}
 
@@ -157,7 +164,7 @@ class SearchTransactionsTool(BaseTool):
             filters['date__lte'] = timezone.make_aware(end_date)
 
         if category:
-            filters['category__name__icontains'] = category
+            filters['category__normalized_name__icontains'] = category.upper()
 
         logger.debug(f"Searching for transactions for user '{user}' with filters: {filters}")
 

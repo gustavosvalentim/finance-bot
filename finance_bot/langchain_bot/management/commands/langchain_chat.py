@@ -1,4 +1,5 @@
-import logging
+import os
+
 from django.core.management import BaseCommand
 from finance_bot.langchain_bot.agent import FinanceAgent
 from finance_bot.langchain_bot.logging import get_logger
@@ -19,7 +20,7 @@ class Command(BaseCommand):
                     self.stdout.write("\nExiting...")
                     break
 
-                output = agent.invoke(user_input)
+                output = agent.invoke(os.environ.get("USER_ID"), os.environ.get("USER_NICKNAME"), user_input)
 
                 for message in output["messages"]:
                     if message.role == "user":

@@ -973,6 +973,7 @@ dependencies = [
     { name = "langchain-openai" },
     { name = "langgraph" },
     { name = "psycopg2-binary" },
+    { name = "pytelegrambotapi" },
     { name = "python-dotenv" },
     { name = "selenium" },
     { name = "webdriver-manager" },
@@ -991,6 +992,7 @@ requires-dist = [
     { name = "langchain-openai", specifier = ">=0.2.14" },
     { name = "langgraph", specifier = ">=0.3.30" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "pytelegrambotapi", specifier = ">=4.26.0" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "selenium", specifier = ">=4.30.0" },
     { name = "webdriver-manager", specifier = ">=4.0.2" },
@@ -3462,6 +3464,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/bd/11/293dd436aea955d45fc4e8a35b6ae7270f5b8e00b53cf6c024c83b657a11/PySocks-1.7.1.tar.gz", hash = "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0", size = 284429 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8d/59/b4572118e098ac8e46e399a1dd0f2d85403ce8bbaad9ec79373ed6badaf9/PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5", size = 16725 },
+]
+
+[[package]]
+name = "pytelegrambotapi"
+version = "4.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1d/83/fb889f80a072199bf98f621a514488c423c56a79b8041c9d860867d18b60/pytelegrambotapi-4.26.0.tar.gz", hash = "sha256:ba92f6a83bf991cbf189577dbc314976032ad8a3fbe6cd631d0ccd79db8523f9", size = 1338623 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/34/e1/b0d4248f395a19d76a46d1c0950354771c1176b9f27dc30849360363991a/pytelegrambotapi-4.26.0-py3-none-any.whl", hash = "sha256:6a7a10571dcecc01aac917269baf4321a0518d5db1fe57b6a09b76cab2bd6b91", size = 270483 },
 ]
 
 [[package]]

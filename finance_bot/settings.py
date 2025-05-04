@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'finance_bot.finance',
     'finance_bot.agents',
     'finance_bot.langchain_bot',
+    'finance_bot.telegram_bot',
     'drf_spectacular',
     'rest_framework',
     'django.contrib.admin',
