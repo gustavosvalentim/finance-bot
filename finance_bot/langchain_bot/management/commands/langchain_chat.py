@@ -23,12 +23,7 @@ class Command(BaseCommand):
                 output = agent.invoke(os.environ.get("USER_ID"), os.environ.get("USER_NICKNAME"), user_input)
 
                 for message in output["messages"]:
-                    if message.role == "user":
-                        logger.debug(f"You: {message.content}")
-                    elif message.role == "assistant":
-                        logger.debug(f"Agent: {message.content}")
-                    else:
-                        logger.warning(f"Unknown role: {message.role}")
+                    logger.Debug(message)    
                 
                 print(f"Agent: {output['messages'][-1].content}")
             except KeyboardInterrupt:
