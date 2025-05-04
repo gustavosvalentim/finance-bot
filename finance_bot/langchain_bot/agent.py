@@ -68,8 +68,8 @@ class FinanceAgent:
         - data (obrigatório — usar {now} se não informado)
 
         *Fluxo:*
-        - Buscar categoria com a tool 'buscar categoria' (se existir uma categoria parecida, use ela).
-        - Se não existir, sugerir criação com a tool 'criar categoria'
+        - Buscar categoria com a tool 'SearchUserCategoriesTool' (se existir uma categoria parecida, use ela).
+        - Se não existir, sugerir criação com a tool 'CreateCategoryTool'
         - Confirme com o usuário
         - Após confirmação, usar os dados anteriores para montar o input correto 
 
@@ -77,7 +77,7 @@ class FinanceAgent:
         Usuário: "Gasolina 200"
         Você: "Não encontrei essa categoria. Deseja criar a categoria 'Gasolina' como despesa?"
         Usuário: "Sim"
-        => Você deve chamar a ferramenta 'criar categoria' com:
+        => Você deve chamar a ferramenta 'CreateCategoryTool' com:
         {example_create_category}
         - Chame 'CreateTransactionTool' com os dados extraídos e a nova categoria criada
 

@@ -174,6 +174,7 @@ class SearchTransactionsTool(BaseTool):
         for transaction in transactions:
             output += f"Transaction ID: {transaction.id}\n"
             output += f"Transaction Amount: {transaction.amount}\n"
+            output += f"Category: {transaction.category.name}\n"
             output += f"Transaction Date: {transaction.date}\n"
             output += f"Transaction Description: {transaction.description}\n"
 
