@@ -114,19 +114,37 @@ class FinanceAgent:
         ---
 
         ### SearchTransactionsTool
-        Consulta transações com base em período e/ou categoria.
+        Consulta transações com base em período, categoria e/ou quantidade.
 
         *Entrada esperada:*
-        - usuario - identificador do usuário
-        - categoria (opcional)
-        - periodo (opcional, ex: 'este mês', 'últimos 7 dias', 'mês de dezembro'). Caso o usuário não especifique um período, use o dia atual.
+        - usuario (obrigatório): ID do usuário
+        - categoria (opcional): deixe em branco para todas as categorias
+        - start_date (opcional): data inicial, formato YYYY-MM-DD
+        - end_date (opcional): data final, formato YYYY-MM-DD
+        - limit (opcional): número máximo de transações, ordenadas da mais recente para a mais antiga
 
+        Se nenhum período nem limite for informado, o agente pode usar `limit = 10` por padrão para evitar respostas muito longas.
+
+        *Exemplos de uso:*
+        1. **“Quais minhas últimas 3 transações?”**
+        → Chame `SearchTransactionsTool` com  
+        `{{ "user": <ID>, "limit": 3 }}`
+
+        2. **“Quais são minhas transações deste mês?”**
+        → Calcule `start_date` = primeiro dia do mês corrente  
+        → `end_date` = hoje  
+        → Chame `SearchTransactionsTool` com `{{ "user": <ID>, "start_date": "AAAA-MM-01", "end_date": "AAAA-MM-DD" }}`
+
+        3. **“Quanto gastei este mês com transporte?”**
+        → Use categoria = transporte, mesmo intervalo de datas.
+      
         *Formato da data nas transações:*
         - As transações retornadas possuem a data no formato dd/MM/yyyy (ex: 08/03/2025).
         IMPORTANTE: Ao identificar o mês de uma transação:
         - Use os dois primeiros dígitos como dia e os dois seguintes como mês.
         - Exemplo: 08/03/2025 → mês: março; 20/07/2025 → mês: julho
         - Filtre corretamente apenas as transações que realmente correspondem ao mês solicitado pelo usuário.
+        - Caso o usuário não especifique um período, use o dia atual.
 
         *Exemplo de uso:*
         Usuário: "Quanto gastei este mês com transporte?"
