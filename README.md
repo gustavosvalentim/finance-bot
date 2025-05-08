@@ -1,7 +1,3 @@
-Sure! Here's a clean and readable documentation draft for **Finance Bot**. This could be used in a `README.md` file or documentation site:
-
----
-
 # Finance Bot 🧾🤖
 
 **Finance Bot** is an AI-powered assistant designed to help users **manage and organize their finances** directly from messaging platforms like **WhatsApp** and **Telegram**.

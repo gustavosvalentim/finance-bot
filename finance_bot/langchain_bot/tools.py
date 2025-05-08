@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Type
+from typing import Any, Type
 from django.utils import timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
 from finance_bot.langchain_bot.logging import get_logger
@@ -22,15 +22,20 @@ class CreateCategoryTool(BaseTool):
 
         logger = get_logger('CreateCategoryTool')
 
-        logger.debug(f"Creating category '{category_name}' for user '{user}'")
+        normalized = category_name.strip().upper()
+        logger.debug(f"Creating category '{normalized}' for user '{user}'")
         
-        category = Category.objects.filter(normalized_name__icontains = category_name.upper()).exists()
-        if category:
-            return f"Category {category_name} already exists"
-        
-        Category.objects.create(user=user, name=category_name)
+        query = Category.objects.filter(normalized_name__icontains=normalized)
+        category = None
+        if query.exists():
+            category = query.first()
+        else:
+            category = Category.objects.create(user=user, name=category_name)
 
-        return f"Category '{category_name}' created successfully."
+        logger.debug(f"Category created: id={category.id}, name={category.name}")
+
+        return (f"Category ID: {category.id}"
+                f"Category Name: {category.name}")
 
 
 class CreateTransactionToolInput(BaseModel):
@@ -40,8 +45,14 @@ class CreateTransactionToolInput(BaseModel):
     user: str = Field(description="User that owns the transaction.")
     category: int = Field(description="ID of the category")
     amount: float = Field(description="Amount of the transaction.")
-    date: datetime = Field(description="Date of the transaction in YYYY-MM-DD format.")
-    description: str = Field(description="The transaction description")
+    date: datetime | None = Field(default=None, description="Date of the transaction in YYYY-MM-DD format. If none, then use today as date")
+    description: str | None = Field(default=None, description="Optional description")
+
+    @field_validator("amount")
+    def amount_positive(cls, v):
+        if v <= 0:
+            raise ValueError("Amount must be positive.")
+        return v
 
 
 class CreateTransactionTool(BaseTool):
@@ -57,12 +68,15 @@ class CreateTransactionTool(BaseTool):
         user: str,
         category: int,
         amount: float,
-        date: datetime,
-        description: str
+        date: datetime | None = None,
+        description: str | None = None,
     ) -> str:
         """Create a new transaction."""
 
         logger = get_logger('CreateTransactionTool')
+
+        if date is None:
+            date = timezone.now()
 
         logger.debug(f"Creating transaction"
                      f"User: {user}\n"
@@ -135,9 +149,10 @@ class SearchUserCategoriesTool(BaseTool):
 class SearchTransactionsToolInput(BaseModel):
     """Search for all users transactions."""
     user: str = Field(description="Name of the user that owns the transactions.")
-    category: str = Field(default=None, description="Name of the category to search for transactions.")
-    start_date: datetime = Field(default=None, description="Start date to search for transactions.")
-    end_date: datetime = Field(default=None, description="End date to search for transactions.")
+    category: str | None = Field(default=None, description="Name of the category to search for transactions (optional).")
+    start_date: datetime | None = Field(default=None, description="Start date to search for transactions (optional).")
+    end_date: datetime | None = Field(default=None, description="End date to search for transactions (optional).")
+    limit: int | None = Field(default=None, description="Max number of transactions to return, newest first (optional)",)
 
 
 class SearchTransactionsTool(BaseTool):
@@ -146,7 +161,7 @@ class SearchTransactionsTool(BaseTool):
     description: str = "Searches the transactions from a user."
     args_schema: Type[BaseModel] = SearchTransactionsToolInput
 
-    def _run(self, user: str, category: str | None, start_date: datetime, end_date: datetime) -> str:
+    def _run(self, user: str, category: str | None = None, start_date: datetime | None = None, end_date: datetime | None = None, limit: int | None = None) -> str:
         """Search for transactions by user and date range."""
 
         logger = get_logger('SearchTransactionsTool')
@@ -155,8 +170,7 @@ class SearchTransactionsTool(BaseTool):
             logger.error("User can't be empty or null")
             return "No transactions were found."
 
-        filters = {'user': user}
-
+        filters: dict[str, Any] = {"user": user}
         if start_date:
             filters['date__gte'] = timezone.make_aware(start_date)
         
@@ -166,18 +180,23 @@ class SearchTransactionsTool(BaseTool):
         if category:
             filters['category__normalized_name__icontains'] = category.upper()
 
-        logger.debug(f"Searching for transactions for user '{user}' with filters: {filters}")
+        logger.debug(f"Searching transactions for user '{user}' with filters: {filters}")
 
-        transactions = Transaction.objects.filter(**filters)
-        output = ""
+        qs = Transaction.objects.filter(**filters).order_by("-date")
+        if limit:
+            qs = qs[:limit]
 
-        for transaction in transactions:
-            output += f"Transaction ID: {transaction.id}\n"
-            output += f"Transaction Amount: {transaction.amount}\n"
-            output += f"Transaction Date: {transaction.date}\n"
-            output += f"Transaction Description: {transaction.description}\n"
+        if not qs:
+            return "Nenhuma transação encontrada."
 
-        return output
+        transactions = Transaction.objects.filter(**filters) 
+
+        return "\n---\n".join([f"Transaction ID: {transaction.id}\n"
+                              f"Transaction Amount: {transaction.amount}\n"
+                              f"Category: {transaction.category.name}\n"
+                              f"Transaction Date: {transaction.date}\n"
+                              f"Transaction Description: {transaction.description}\n"
+                              for transaction in transactions])
 
 
 class UpdateTransactionToolInput(BaseModel):
