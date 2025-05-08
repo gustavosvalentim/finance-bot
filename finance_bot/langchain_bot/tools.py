@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Type
 from django.utils import timezone
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
 from finance_bot.langchain_bot.logging import get_logger
@@ -25,16 +25,17 @@ class CreateCategoryTool(BaseTool):
         normalized = category_name.strip().upper()
         logger.debug(f"Creating category '{normalized}' for user '{user}'")
         
-        category = Category.objects.filter(user=user, normalized_name=normalized).first()
-        if category:
-            status_msg = "already exists"
+        query = Category.objects.filter(normalized_name__icontains=normalized)
+        category = None
+        if query.exists():
+            category = query.first()
         else:
             category = Category.objects.create(user=user, name=category_name)
-            status_msg = "created successfully"
 
-        logger.debug(f"Category {status_msg}: id={category.id}, name={category.name}")
+        logger.debug(f"Category created: id={category.id}, name={category.name}")
 
-        return f"Category '{category.name}' (id={category.id}) {status_msg}."
+        return (f"Category ID: {category.id}"
+                f"Category Name: {category.name}")
 
 
 class CreateTransactionToolInput(BaseModel):
@@ -47,7 +48,7 @@ class CreateTransactionToolInput(BaseModel):
     date: datetime | None = Field(default=None, description="Date of the transaction in YYYY-MM-DD format. If none, then use today as date")
     description: str | None = Field(default=None, description="Optional description")
 
-    @validator("amount")
+    @field_validator("amount")
     def amount_positive(cls, v):
         if v <= 0:
             raise ValueError("Amount must be positive.")
@@ -76,9 +77,6 @@ class CreateTransactionTool(BaseTool):
 
         if date is None:
             date = timezone.now()
-        
-        if timezone.is_naive(date):
-            date = timezone.make_aware(date)
 
         logger.debug(f"Creating transaction"
                      f"User: {user}\n"
@@ -91,7 +89,7 @@ class CreateTransactionTool(BaseTool):
             user=user,
             category_id=category,
             amount=amount,
-            date=date,
+            date=timezone.make_aware(date),
             description=description
         )
 
@@ -191,22 +189,14 @@ class SearchTransactionsTool(BaseTool):
         if not qs:
             return "Nenhuma transação encontrada."
 
-        return "\n".join(
-            f"ID {t.id} | {t.date:%d/%m/%Y} | R$ {t.amount:.2f} | {t.category.name} | {t.description or ''}"
-            for t in qs
-        )
+        transactions = Transaction.objects.filter(**filters) 
 
-        # transactions = Transaction.objects.filter(**filters)
-        # output = ""
-
-        # for transaction in transactions:
-        #     output += f"Transaction ID: {transaction.id}\n"
-        #     output += f"Transaction Amount: {transaction.amount}\n"
-        #     output += f"Category: {transaction.category.name}\n"
-        #     output += f"Transaction Date: {transaction.date}\n"
-        #     output += f"Transaction Description: {transaction.description}\n"
-
-        # return output
+        return "\n---\n".join([f"Transaction ID: {transaction.id}\n"
+                              f"Transaction Amount: {transaction.amount}\n"
+                              f"Category: {transaction.category.name}\n"
+                              f"Transaction Date: {transaction.date}\n"
+                              f"Transaction Description: {transaction.description}\n"
+                              for transaction in transactions])
 
 
 class UpdateTransactionToolInput(BaseModel):
