@@ -22,15 +22,19 @@ class CreateCategoryTool(BaseTool):
 
         logger = get_logger('CreateCategoryTool')
 
-        logger.debug(f"Creating category '{category_name}' for user '{user}'")
+        normalized = category_name.strip().upper()
+        logger.debug(f"Creating category '{normalized}' for user '{user}'")
         
-        category = Category.objects.filter(normalized_name__icontains = category_name.upper()).exists()
+        category = Category.objects.filter(user=user, normalized_name=normalized).first()
         if category:
-            return f"Category {category_name} already exists"
-        
-        Category.objects.create(user=user, name=category_name)
+            status_msg = "already exists"
+        else:
+            category = Category.objects.create(user=user, name=category_name)
+            status_msg = "created successfully"
 
-        return f"Category '{category_name}' created successfully."
+        logger.debug(f"Category {status_msg}: id={category.id}, name={category.name}")
+
+        return f"Category '{category.name}' (id={category.id}) {status_msg}."
 
 
 class CreateTransactionToolInput(BaseModel):

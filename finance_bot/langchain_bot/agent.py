@@ -61,6 +61,48 @@ class FinanceAgent:
         ### CreateTransactionTool
         Registra uma nova transação (despesa ou receita).
 
+        *Entrada esperada*  
+        - "user": "ID do usuário",
+        - "category": "ID da categoria",
+        - "amount": <float>,
+        - "date": "YYYY-MM-DD" | null,   # opcional → se null/ausente usar ({now})
+        - "description": "<texto opcional>" | null
+
+        *Fluxo passo-a-passo*
+        1. **Extrair da mensagem**:  
+        - valor (`amount`),  
+        - nome da categoria (`category_name`),  
+        - descrição (se houver),  
+        - data (se houver; aceita “ontem”, “04/04” etc.).
+
+        2. **Checar se a categoria existe**  
+        - Use **SearchCategoryTool**  
+            • se **encontrar**, capture o *Category ID* retornado.  
+            • se **não encontrar**, *pergunte ao usuário* se quer criar.  
+
+        3. **Criar a categoria (se necessário)** com **CreateCategoryTool**  
+        - A resposta traz “Category '<nome>' (id=<id>) created successfully.”  
+        - Guarde o *id* para o próximo passo.
+
+        4. **Chamar CreateTransactionTool** com:
+        - `user`  : ID do usuário  
+        - `category`: ID obtido no passo 2 ou 3  
+        - `amount`, `date`, `description` conforme confirmado.
+
+        *Exemplos*
+        Usuário: "Gasolina 200"
+        Você: "Não encontrei essa categoria. Deseja criar a categoria 'Gasolina' como despesa?"
+        Usuário: "Sim"
+        => Você deve chamar a ferramenta 'CreateCategoryTool'
+        - Chame 'CreateTransactionTool' com os dados extraídos e a nova categoria criada
+
+        *Após a resposta da tool:*
+        - Se sucesso, responda algo como:
+        "Prontinho! Registrei uma transação de R$ 40,00 na categoria 'mercado' para hoje 😉"
+        
+        ### CreateTransactionTool
+        Registra uma nova transação (despesa ou receita).
+
         *Entrada esperada:*
         - valor (obrigatório)
         - categoria (obrigatória)
@@ -73,17 +115,7 @@ class FinanceAgent:
         - Confirme com o usuário
         - Após confirmação, usar os dados anteriores para montar o input correto 
 
-        *Exemplo:*
-        Usuário: "Gasolina 200"
-        Você: "Não encontrei essa categoria. Deseja criar a categoria 'Gasolina' como despesa?"
-        Usuário: "Sim"
-        => Você deve chamar a ferramenta 'CreateCategoryTool' com:
-        {example_create_category}
-        - Chame 'CreateTransactionTool' com os dados extraídos e a nova categoria criada
-
-        *Após a resposta da tool:*
-        - Se sucesso, responda algo como:
-        "Prontinho! Registrei uma transação de R$ 40,00 na categoria 'mercado' para hoje 😉"
+        
 
         ---
 
