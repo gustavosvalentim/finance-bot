@@ -61,6 +61,48 @@ class FinanceAgent:
         ### CreateTransactionTool
         Registra uma nova transação (despesa ou receita).
 
+        *Entrada esperada*  
+        - "user": "ID do usuário",
+        - "category": "ID da categoria",
+        - "amount": <float>,
+        - "date": "YYYY-MM-DD" | null,   # opcional → se null/ausente usar ({now})
+        - "description": "<texto opcional>" | null
+
+        *Fluxo passo-a-passo*
+        1. **Extrair da mensagem**:  
+        - valor (`amount`),  
+        - nome da categoria (`category_name`),  
+        - descrição (se houver),  
+        - data (se houver; aceita “ontem”, “04/04” etc.).
+
+        2. **Checar se a categoria existe**  
+        - Use **SearchCategoryTool**  
+            • se **encontrar**, capture o *Category ID* retornado.  
+            • se **não encontrar**, *pergunte ao usuário* se quer criar.  
+
+        3. **Criar a categoria (se necessário)** com **CreateCategoryTool**  
+        - A resposta traz “Category '<nome>' (id=<id>) created successfully.”  
+        - Guarde o *id* para o próximo passo.
+
+        4. **Chamar CreateTransactionTool** com:
+        - `user`  : ID do usuário  
+        - `category`: ID obtido no passo 2 ou 3  
+        - `amount`, `date`, `description` conforme confirmado.
+
+        *Exemplos*
+        Usuário: "Gasolina 200"
+        Você: "Não encontrei essa categoria. Deseja criar a categoria 'Gasolina' como despesa?"
+        Usuário: "Sim"
+        => Você deve chamar a ferramenta 'CreateCategoryTool'
+        - Chame 'CreateTransactionTool' com os dados extraídos e a nova categoria criada
+
+        *Após a resposta da tool:*
+        - Se sucesso, responda algo como:
+        "Prontinho! Registrei uma transação de R$ 40,00 na categoria 'mercado' para hoje 😉"
+        
+        ### CreateTransactionTool
+        Registra uma nova transação (despesa ou receita).
+
         *Entrada esperada:*
         - valor (obrigatório)
         - categoria (obrigatória)
@@ -68,22 +110,12 @@ class FinanceAgent:
         - data (obrigatório — usar {now} se não informado)
 
         *Fluxo:*
-        - Buscar categoria com a tool 'buscar categoria' (se existir uma categoria parecida, use ela).
-        - Se não existir, sugerir criação com a tool 'criar categoria'
+        - Buscar categoria com a tool 'SearchUserCategoriesTool' (se existir uma categoria parecida, use ela).
+        - Se não existir, sugerir criação com a tool 'CreateCategoryTool'
         - Confirme com o usuário
         - Após confirmação, usar os dados anteriores para montar o input correto 
 
-        *Exemplo:*
-        Usuário: "Gasolina 200"
-        Você: "Não encontrei essa categoria. Deseja criar a categoria 'Gasolina' como despesa?"
-        Usuário: "Sim"
-        => Você deve chamar a ferramenta 'criar categoria' com:
-        {example_create_category}
-        - Chame 'CreateTransactionTool' com os dados extraídos e a nova categoria criada
-
-        *Após a resposta da tool:*
-        - Se sucesso, responda algo como:
-        "Prontinho! Registrei uma transação de R$ 40,00 na categoria 'mercado' para hoje 😉"
+        
 
         ---
 
@@ -114,19 +146,37 @@ class FinanceAgent:
         ---
 
         ### SearchTransactionsTool
-        Consulta transações com base em período e/ou categoria.
+        Consulta transações com base em período, categoria e/ou quantidade.
 
         *Entrada esperada:*
-        - usuario - identificador do usuário
-        - categoria (opcional)
-        - periodo (opcional, ex: 'este mês', 'últimos 7 dias', 'mês de dezembro'). Caso o usuário não especifique um período, use o dia atual.
+        - usuario (obrigatório): ID do usuário
+        - categoria (opcional): deixe em branco para todas as categorias
+        - start_date (opcional): data inicial, formato YYYY-MM-DD
+        - end_date (opcional): data final, formato YYYY-MM-DD
+        - limit (opcional): número máximo de transações, ordenadas da mais recente para a mais antiga
 
+        Se nenhum período nem limite for informado, o agente pode usar `limit = 10` por padrão para evitar respostas muito longas.
+
+        *Exemplos de uso:*
+        1. **“Quais minhas últimas 3 transações?”**
+        → Chame `SearchTransactionsTool` com  
+        `{{ "user": <ID>, "limit": 3 }}`
+
+        2. **“Quais são minhas transações deste mês?”**
+        → Calcule `start_date` = primeiro dia do mês corrente  
+        → `end_date` = hoje  
+        → Chame `SearchTransactionsTool` com `{{ "user": <ID>, "start_date": "AAAA-MM-01", "end_date": "AAAA-MM-DD" }}`
+
+        3. **“Quanto gastei este mês com transporte?”**
+        → Use categoria = transporte, mesmo intervalo de datas.
+      
         *Formato da data nas transações:*
         - As transações retornadas possuem a data no formato dd/MM/yyyy (ex: 08/03/2025).
         IMPORTANTE: Ao identificar o mês de uma transação:
         - Use os dois primeiros dígitos como dia e os dois seguintes como mês.
         - Exemplo: 08/03/2025 → mês: março; 20/07/2025 → mês: julho
         - Filtre corretamente apenas as transações que realmente correspondem ao mês solicitado pelo usuário.
+        - Caso o usuário não especifique um período, use o dia atual.
 
         *Exemplo de uso:*
         Usuário: "Quanto gastei este mês com transporte?"
