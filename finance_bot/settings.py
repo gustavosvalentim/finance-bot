@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-b6xnd-9(6-x5lfrfm52phbmp0t)5y-q#zb&w3u1q4nz=e+*b1w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = []
 
@@ -40,9 +40,9 @@ API_KEY = os.environ.get("API_KEY", "1234567890")
 
 INSTALLED_APPS = [
     'finance_bot.finance',
-    'finance_bot.agents',
     'finance_bot.langchain_bot',
     'finance_bot.telegram_bot',
+    'finance_bot.users',
     'drf_spectacular',
     'rest_framework',
     'django.contrib.admin',
@@ -88,19 +88,22 @@ WSGI_APPLICATION = 'finance_bot.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': os.environ.get("DATABASE_NAME", "finances"),
-    #     'USER': os.environ.get("DATABASE_USER", "usr_finance_bot"),
-    #     'PASSWORD': os.environ.get("DATABASE_PASSWORD", "postgres"),
-    #     'HOST': os.environ.get("DATABASE_HOST", "localhost"),
-    #     'PORT': os.environ.get("DATABASE_PORT", "5432"),
-    # }
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'db.sqlite'
     }
 }
+
+db_engine = os.environ.get("DATABASE_ENGINE", "sqlite3")
+if db_engine == "postgresql":
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("DATABASE_NAME", "finances"),
+        'USER': os.environ.get("DATABASE_USER", "usr_finance_bot"),
+        'PASSWORD': os.environ.get("DATABASE_PASSWORD", "postgres"),
+        'HOST': os.environ.get("DATABASE_HOST", "localhost"),
+        'PORT': os.environ.get("DATABASE_PORT", "5432"),
+    }
 
 
 # Password validation

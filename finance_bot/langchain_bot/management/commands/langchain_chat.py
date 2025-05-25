@@ -2,7 +2,7 @@ import os
 
 from django.core.management import BaseCommand
 from finance_bot.langchain_bot.agent import FinanceAgent
-from finance_bot.langchain_bot.logging import get_logger
+from finance_bot.logging import get_logger
 
 
 class Command(BaseCommand):

@@ -4,7 +4,7 @@ from django.utils import timezone
 from pydantic import BaseModel, Field, field_validator
 from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
-from finance_bot.langchain_bot.logging import get_logger
+from finance_bot.logging import get_logger
 
 class CreateCategoryToolInput(BaseModel):
     """Input schema for CreateCategoryTool."""
