@@ -1,10 +1,11 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.10-alpine as base
+FROM python:3.10-slim as base
 
 # Set the working directory
 WORKDIR /app
 
 COPY pyproject.toml .
+COPY uv.lock .
 
 RUN pip install uv
 RUN uv sync --frozen --no-install-project --no-dev
