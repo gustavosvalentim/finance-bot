@@ -2,6 +2,8 @@
 
 python manage.py migrate
 
+python manage.py collectstatic --noinput
+
 # Run Telegram Bot
 python manage.py telegram_bot
 
