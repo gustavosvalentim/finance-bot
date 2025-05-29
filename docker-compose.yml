@@ -7,13 +7,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8000:8000
+    env_file: .env
     environment:
-      DATABASE_ENGINE: "postgresql"
+      DATABASE_ENGINE: postgresql
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
-      DATABASE_NAME: finances
-      DATABASE_USER: usr_finance_bot
-      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
     links:
       - postgres
     depends_on:
@@ -26,9 +27,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: finances
-      POSTGRES_USER: usr_finance_bot
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
 volumes:
   postgres_data:
