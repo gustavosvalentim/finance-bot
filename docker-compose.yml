@@ -9,6 +9,7 @@ services:
       - 8000:8000
     env_file: .env
     environment:
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       DATABASE_ENGINE: postgresql
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432

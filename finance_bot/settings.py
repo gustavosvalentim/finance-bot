@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-b6xnd-9(6-x5lfrfm52phbmp0t)5y-q#zb&w3u1q4nz=e+*b1w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 API_KEY = os.environ.get("API_KEY", "1234567890") 
 
