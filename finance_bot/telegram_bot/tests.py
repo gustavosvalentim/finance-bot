@@ -55,21 +55,3 @@ class TelegramBotTests(TestCase):
             initial_count + 1,
             "User interaction count should increase by 1."
         )
-
-    def test_telegram_user_settings_creation(self):
-        # Test creating a TelegramUserSettings instance
-        telegram_id = "987654321"
-        email = "test2@test.com"
-        telegram_user = TelegramUserSettings.create(
-            telegram_id=telegram_id,
-            email=email,
-            name="Test User",
-            phone="1234567890",
-            rate_limit_enabled=True,
-            rate_limit=10
-        )
-
-        user = User.objects.get(telegram_id=telegram_id)
-
-        self.assertIsNotNone(telegram_user, "TelegramUserSettings instance should be created.")
-        self.assertEqual(user.email, email, "User email should match the provided email.")

@@ -65,23 +65,19 @@ class RateLimitMiddleware(Middleware):
         # In a real-world scenario, you would check the user's message count
         # and the time frame to determine if they are within the limit.
         
-        user = User.objects.get(telegram_id=user_id)
-        if not user:
-            return False
-        
-        user_settings = TelegramUserSettings.objects.get(telegram_id=user_id)
+        user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id).first()
         if not user_settings.rate_limit_enabled:
             return True
         
         message_count = UserInteraction.objects.filter(
-            user=user,
+            user=user_settings.user,
             interaction_type=UserInteraction.InteractionType.MESSAGE,
             # Assuming you want a time frame validation
             # created_at__gte=timezone.now() - timedelta(seconds=self.time_frame),
         ).count()
         if message_count >= user_settings.rate_limit:
             self.bot.send_message(
-                user.telegram_id,
+                user_settings.telegram_id,
                 "Você atingiu o limit de mensagens permitidas. Tente novamente mais tarde.",
             )
             return False
@@ -101,12 +97,12 @@ class UserInteractionMiddleware(Middleware):
         """
         Handle user interaction logging.
         """
-        user = User.objects.get(telegram_id=user_id)
-        if not user:
+        user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id).first() 
+        if not user_settings:
             return False
 
         UserInteraction.objects.create(
-            user=user,
+            user=user_settings.user,
             source="telegram",
             interaction_type=UserInteraction.InteractionType.MESSAGE,
             interaction_data=message,

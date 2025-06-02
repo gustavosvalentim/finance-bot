@@ -1,20 +1,27 @@
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
-class User(models.Model):
+class User(AbstractUser):
     """
     User model to store user information.
     """
 
     email = models.EmailField(unique=True)
-    telegram_id = models.CharField(max_length=50, blank=True, null=True)
-    phone = models.CharField(max_length=15, blank=True, null=True)
     name = models.CharField(max_length=150, blank=True, null=True)
+
+    # Overrides from AbstractUser
+    username = models.CharField(max_length=150, blank=True, null=True)
+    password = models.CharField(max_length=255, blank=True, null=True)
+
+    phone = models.CharField(max_length=15, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.email
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'
 
+    def __str__(self):
+        return self.name
 
 class UserInteraction(models.Model):
     """
