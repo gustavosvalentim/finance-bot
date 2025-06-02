@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from telebot import TeleBot
-from finance_bot.users.models import User, UserInteraction
+from finance_bot.users.models import UserInteraction
 from finance_bot.telegram_bot.models import TelegramUserSettings
 
 
