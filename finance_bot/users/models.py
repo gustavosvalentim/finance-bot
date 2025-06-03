@@ -9,11 +9,6 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=150, blank=True, null=True)
-
-    # Overrides from AbstractUser
-    username = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    password = models.CharField(max_length=255, blank=True, null=True)
-
     phone = models.CharField(max_length=15, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
