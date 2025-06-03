@@ -13,5 +13,9 @@ class TelegramUserSettings(models.Model):
     rate_limit_enabled = models.BooleanField(default=True)
     rate_limit = models.IntegerField(default=100)
 
+    class Meta:
+        verbose_name = "User settings (Telegram)"
+        verbose_name_plural = "User settings (Telegram)"
+
     def __str__(self):
         return self.telegram_id

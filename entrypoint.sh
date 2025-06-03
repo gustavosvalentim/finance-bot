@@ -1,7 +1,6 @@
 #!/bin/sh
 
-python manage.py migrate
-
+python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
 # Run Django server

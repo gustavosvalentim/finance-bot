@@ -8,12 +8,11 @@ class User(AbstractUser):
     """
 
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=150, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.email
+        return f'{self.first_name} {self.last_name} ({self.email})'
 
 class UserInteraction(models.Model):
     """
@@ -30,4 +29,4 @@ class UserInteraction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.interaction_type}"
+        return f"{self.user.id} - {self.interaction_type} from {self.source}"
