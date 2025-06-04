@@ -200,7 +200,7 @@ class SearchTransactionsTool(BaseTool):
 
 
 class UpdateTransactionToolInput(BaseModel):
-    """Search for all users categories."""
+    """Parameters for update transaction."""
     user: str = Field(description="Name of the user that owns the categories.")
     transaction: int = Field(description="Name of the transaction to update.")
     amount: int = Field(description="New amount of the transaction.")
@@ -213,8 +213,84 @@ class UpdateTransactionTool(BaseTool):
     args_schema: Type[BaseModel] = UpdateTransactionToolInput
 
     def _run(self, user: str, transaction: int, amount: int) -> str:
-        transaction = Transaction.objects.get(id=transaction, user=user)
+        transaction = Transaction.objects.filter(id=transaction, user=user).first()
+
+        if transaction is None:
+            return "Transaction was not found."
+
         transaction.amount = amount
         transaction.save()
 
         return "Transaction updated successfully."
+
+
+class DeleteTransactionToolInput(BaseModel):
+    """Parameters to delete a transaction. """
+    user_id: str = Field(description="ID of the user deleting the transaction.")
+    transaction_id: str = Field(description="ID of the transaction to delete.")
+
+
+class DeleteTransactionTool(BaseTool):
+    """Deletes a transaction. """
+    name: str = "DeleteTransactionTool"
+    description: str = "Deletes a transaction"
+    args_schema: Type[DeleteTransactionToolInput]
+
+    def _run(self, user_id: str, transaction_id: str) -> str:
+        transaction = Transaction.objects.filter(user=user_id, id=transaction_id).first()
+
+        if transaction is None:
+            return "Transaction was not found."
+        
+        transaction.delete()
+
+        return f"Transaction {transaction.id} was deleted successfuly."
+    
+
+class DeleteCategoryToolInput(BaseModel):
+    """Parameters to delete a category. """
+    user_id: str = Field(description="ID of the user deleting the category.")
+    category_name: str = Field(description="Name of the category to delete.")
+
+
+class DeleteCategoryTool(BaseTool):
+    """Deletes a category. """
+    name: str = "DeleteCategoryTool"
+    description: str = "Deletes a category. "
+    args_schema: Type[DeleteCategoryToolInput]
+
+    def _run(self, user_id: str, category_name: str) -> str:
+        category = Category.objects.filter(normalized_name=category_name.upper(), user=user_id).first()
+
+        if category is None:
+            return "Category was not found."
+        
+        category.delete()
+
+        return f"Category {category.name} was deleted successfuly."
+    
+
+class UpdateCategoryToolInput(BaseModel):
+    """Parameters for updating a category. """
+    user_id: str = Field(description="ID of the user updating the category.")
+    category_name: str = Field(description="Name of the category to delete.")
+    new_name: str = Field(description="New category name.")
+
+
+class UpdateCategoryTool(BaseTool):
+    """Updates a category. """
+    name: str = "UpdateCategoryTool"
+    description: str = "Updates a category."
+    args_schema: Type[UpdateCategoryToolInput]
+
+    def _run(self, user_id: str, category_name: str, new_name: str) -> str:
+        category = Category.objects.filter(normalized_name=category_name.upper(), user=user_id).first()
+
+        if category is None:
+            return "Category was not found."
+        
+        category.name = new_name
+        category.normalized_name = new_name.upper()
+        category.save()
+
+        return f"Category {category.name} was updated successfuly."
