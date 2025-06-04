@@ -13,6 +13,10 @@ from finance_bot.langchain_bot.tools import (
     SearchUserCategoriesTool,
     SearchCategoryTool,
     SearchTransactionsTool,
+    UpdateCategoryTool,
+    UpdateTransactionTool,
+    DeleteCategoryTool,
+    DeleteTransactionTool,
 )
 
 
@@ -25,6 +29,10 @@ class FinanceAgent:
         SearchUserCategoriesTool(),
         SearchCategoryTool(),
         SearchTransactionsTool(),
+        UpdateCategoryTool(),
+        UpdateTransactionTool(),
+        DeleteCategoryTool(),
+        DeleteTransactionTool(),
     ]
     default_config = {
         'configurable': {
