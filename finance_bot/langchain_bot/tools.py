@@ -234,7 +234,7 @@ class DeleteTransactionTool(BaseTool):
     """Deletes a transaction. """
     name: str = "DeleteTransactionTool"
     description: str = "Deletes a transaction"
-    args_schema: Type[DeleteTransactionToolInput]
+    args_schema: Type[BaseModel] = DeleteTransactionToolInput
 
     def _run(self, user_id: str, transaction_id: str) -> str:
         transaction = Transaction.objects.filter(user=user_id, id=transaction_id).first()
@@ -257,7 +257,7 @@ class DeleteCategoryTool(BaseTool):
     """Deletes a category. """
     name: str = "DeleteCategoryTool"
     description: str = "Deletes a category. "
-    args_schema: Type[DeleteCategoryToolInput]
+    args_schema: Type[BaseModel] = DeleteCategoryToolInput
 
     def _run(self, user_id: str, category_name: str) -> str:
         category = Category.objects.filter(normalized_name=category_name.upper(), user=user_id).first()
@@ -281,7 +281,7 @@ class UpdateCategoryTool(BaseTool):
     """Updates a category. """
     name: str = "UpdateCategoryTool"
     description: str = "Updates a category."
-    args_schema: Type[UpdateCategoryToolInput]
+    args_schema: Type[BaseModel] = UpdateCategoryToolInput
 
     def _run(self, user_id: str, category_name: str, new_name: str) -> str:
         category = Category.objects.filter(normalized_name=category_name.upper(), user=user_id).first()
