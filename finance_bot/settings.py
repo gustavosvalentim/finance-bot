@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'finance_bot.langchain_bot',
     'finance_bot.telegram_bot',
     'finance_bot.users',
+    'daphne',
     'drf_spectacular',
     'rest_framework',
     'django.contrib.admin',
@@ -181,4 +182,15 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
+}
+
+# Channels
+# More information on https://channels.readthedocs.io/en/latest/index.html
+
+ASGI_APPLICATION = "finance_bot.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
 }
