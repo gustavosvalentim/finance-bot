@@ -6,6 +6,7 @@ from finance_bot.langchain_bot.agent import FinanceAgent
 
 class ChatConsumer(WebsocketConsumer):
     connections = {}
+    agent = FinanceAgent()
 
     def connect(self):
         self.connections.update({
@@ -21,4 +22,7 @@ class ChatConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
-        self.send(text_data=json.dumps({"message": message}))
+
+        response = self.agent.invoke(self.scope['user'].id, self.scope['user'].first_name, message)
+
+        self.send(text_data=json.dumps({"message": response['messages'][-1].content}))

@@ -5,6 +5,7 @@ from finance_bot.users.models import User
 
 class AgentSettings(models.Model):
     prompt = models.TextField()
+    model = models.CharField(max_length=100, default="gpt-4o-mini")
     is_default = models.BooleanField(default=False)
 
     class Meta:

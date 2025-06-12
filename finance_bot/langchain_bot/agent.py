@@ -1,6 +1,7 @@
 import os
 
 from datetime import datetime
+from typing import Any
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -420,7 +421,7 @@ class FinanceAgent:
     def __init__(self):
         self.agent_executor = create_react_agent(self.model, self.tools, checkpointer=self.memory)
 
-    def invoke(self, user_id: str, user_nickname: str, query: str) -> str:
+    def invoke(self, user_id: str, user_nickname: str, query: str) -> (dict[str, Any] | Any):
         """Invoke the agent with the given query."""
 
         system_prompt_formatted = self.system_prompt.format(
