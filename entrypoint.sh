@@ -3,8 +3,8 @@
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
-# Run Django server
-nohup daphne finance_bot.asgi:application --bind 0.0.0.0:8000 &
-
 # Run Telegram Bot
-python manage.py telegram_bot
+nohup python manage.py telegram_bot &
+
+# Run Django server
+daphne -b 0.0.0.0 -p 8000 finance_bot.asgi:application
