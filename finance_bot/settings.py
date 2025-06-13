@@ -194,3 +194,19 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
+
+# Agent
+
+AGENT_SETTINGS = {
+    "tools": [
+        "finance_bot.langchain_bot.tools.CreateCategoryTool",
+        "finance_bot.langchain_bot.tools.CreateTransactionTool",
+        "finance_bot.langchain_bot.tools.SearchUserCategoriesTool",
+        "finance_bot.langchain_bot.tools.SearchCategoryTool",
+        "finance_bot.langchain_bot.tools.SearchTransactionsTool",
+        "finance_bot.langchain_bot.tools.UpdateCategoryTool",
+        "finance_bot.langchain_bot.tools.UpdateTransactionTool",
+        "finance_bot.langchain_bot.tools.DeleteCategoryTool",
+        "finance_bot.langchain_bot.tools.DeleteTransactionTool",
+    ]
+}

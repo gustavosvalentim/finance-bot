@@ -1,40 +1,17 @@
 import os
 
 from datetime import datetime
-from typing import Any
+from django.conf import settings
+from finance_bot.module_utils import load_class
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
-
-# import tools
-from finance_bot.langchain_bot.tools import (
-    CreateCategoryTool,
-    CreateTransactionTool,
-    SearchUserCategoriesTool,
-    SearchCategoryTool,
-    SearchTransactionsTool,
-    UpdateCategoryTool,
-    UpdateTransactionTool,
-    DeleteCategoryTool,
-    DeleteTransactionTool,
-)
+from typing import Any
 
 
 class FinanceAgent:
     memory = MemorySaver()
-    model = ChatOpenAI(api_key=os.environ["OPENAI_API_KEY"], model="gpt-4o-mini")
-    tools = [
-        CreateCategoryTool(),
-        CreateTransactionTool(),
-        SearchUserCategoriesTool(),
-        SearchCategoryTool(),
-        SearchTransactionsTool(),
-        UpdateCategoryTool(),
-        UpdateTransactionTool(),
-        DeleteCategoryTool(),
-        DeleteTransactionTool(),
-    ]
     default_config = {
         'configurable': {
             'thread_id': '1234567890',
@@ -419,7 +396,17 @@ class FinanceAgent:
         Você é responsável por tornar o processo financeiro fácil, leve e eficiente para o usuário 😄"""
     
     def __init__(self):
+        self.tools = self.load_tools()
+        self.model = ChatOpenAI(api_key=os.environ["OPENAI_API_KEY"], model="gpt-4o-mini")
         self.agent_executor = create_react_agent(self.model, self.tools, checkpointer=self.memory)
+
+    def load_tools(self):
+        tools = settings.AGENT_SETTINGS['tools']
+        instances = []
+        for tool_loc in tools:
+            cls = load_class(tool_loc)
+            instances.append(cls())
+        return instances
 
     def invoke(self, user_id: str, user_nickname: str, query: str) -> (dict[str, Any] | Any):
         """Invoke the agent with the given query."""
@@ -428,9 +415,6 @@ class FinanceAgent:
             user_id=user_id,
             user_nickname=user_nickname,
             now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            example_create_category={
-                "Categoria_despesa": "Gasolina"
-            },
         )
         return self.agent_executor.invoke(
             {'messages': [SystemMessage(content=system_prompt_formatted), HumanMessage(content=query)]},
