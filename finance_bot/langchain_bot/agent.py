@@ -401,12 +401,7 @@ class FinanceAgent:
         self.agent_executor = create_react_agent(self.model, self.tools, checkpointer=self.memory)
 
     def load_tools(self):
-        tools = settings.AGENT_SETTINGS['tools']
-        instances = []
-        for tool_loc in tools:
-            cls = load_class(tool_loc)
-            instances.append(cls())
-        return instances
+        return [(load_class(tool_loc)()) for tool_loc in settings.AGENT_SETTINGS['tools']]
 
     def invoke(self, user_id: str, user_nickname: str, query: str) -> (dict[str, Any] | Any):
         """Invoke the agent with the given query."""
