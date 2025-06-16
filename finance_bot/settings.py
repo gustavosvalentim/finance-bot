@@ -102,8 +102,7 @@ DATABASES = {
     }
 }
 
-db_engine = os.environ.get("DATABASE_ENGINE", "sqlite3")
-if db_engine == "postgresql":
+if os.environ.get("DATABASE_ENGINE", "sqlite3") == "postgresql":
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get("DATABASE_NAME", "finances"),

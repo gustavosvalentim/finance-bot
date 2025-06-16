@@ -25,7 +25,7 @@ class CreateCategoryTool(BaseTool):
         normalized = category_name.strip().upper()
         logger.debug(f"Creating category '{normalized}' for user '{user}'")
         
-        query = Category.objects.filter(normalized_name__icontains=normalized)
+        query = Category.objects.filter(normalized_name__icontains=normalized, user=user)
         category = None
         if query.exists():
             category = query.first()
