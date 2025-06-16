@@ -10,6 +10,7 @@ services:
     env_file: .env
     environment:
       ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DEBUG: ${DEBUG}
       DATABASE_ENGINE: postgresql
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
