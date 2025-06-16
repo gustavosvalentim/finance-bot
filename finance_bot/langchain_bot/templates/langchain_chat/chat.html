@@ -41,7 +41,10 @@
         .replace("{time}", `${now.getHours()}:${now.getMinutes()}`)
         .replace("{justify}", sender_name == botname ? "justify-end" : "justify-start");
 
-      document.querySelector('#chat-log').innerHTML += newHtml;
+      const chatLog = document.querySelector('#chat-log');
+
+      chatLog.innerHTML += newHtml;
+      chatLog.scrollTop = chatLog.scrollHeight;
     }
 
     chatSocket.onmessage = function (e) {

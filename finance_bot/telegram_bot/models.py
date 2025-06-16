@@ -8,7 +8,7 @@ class TelegramUserSettings(models.Model):
     TelegramUser model to store user information.
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     telegram_id = models.CharField(max_length=50, unique=True)
     rate_limit_enabled = models.BooleanField(default=True)
     rate_limit = models.IntegerField(default=100)

@@ -58,7 +58,6 @@ cp .env.example .env
 
 Then, open the `.env` file and **set the environment variables**:
 
-- **USER_ID**: A user identification to use the chat, this is the user identification that will be stored in the database. The max limit of characters is 14.
 - **OPENAI_API_KEY**: Your OPENAI API key.
 
 ### 5. Run database migrations
