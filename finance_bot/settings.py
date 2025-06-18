@@ -201,7 +201,7 @@ AGENT_SETTINGS = {
         "finance_bot.langchain_bot.tools.CreateCategoryTool",
         "finance_bot.langchain_bot.tools.CreateTransactionTool",
         "finance_bot.langchain_bot.tools.SearchUserCategoriesTool",
-        "finance_bot.langchain_bot.tools.SearchCategoryTool",
+        "finance_bot.langchain_bot.tools.SearchCategoryByNameTool",
         "finance_bot.langchain_bot.tools.SearchTransactionsTool",
         "finance_bot.langchain_bot.tools.UpdateCategoryTool",
         "finance_bot.langchain_bot.tools.UpdateTransactionTool",

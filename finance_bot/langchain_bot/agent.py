@@ -62,7 +62,7 @@ class FinanceAgent:
         - data (se houver; aceita “ontem”, “04/04” etc.).
 
         2. *Checar se a categoria existe*  
-        - Use *SearchCategoryTool*  
+        - Use *SearchCategoryByNameTool*  
             • se *encontrar, capture o *Category ID retornado.  
             • se *não encontrar, *pergunte ao usuário se quer criar.  
 
@@ -379,7 +379,7 @@ class FinanceAgent:
         EXEMPLOS DE INTERAÇÃO
 
         Usuário: "comprei gasolina 150 ontem"
-        - SearchCategoryTool ("gasolina")
+        - SearchCategoryByNameTool ("gasolina")
         - CreateTransactionTool com data = ontem
         - Resposta: "Adicionei uma despesa de R$ 150,00 em 'gasolina' para ontem 🛻"
 

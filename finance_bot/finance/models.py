@@ -12,6 +12,9 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
 
+    def __str__(self):
+        return f"{self.user} - {self.name}"
+
     def save(self, *args, **kwargs):
         self.normalized_name = self.name.upper()
         super().save(*args, **kwargs)
@@ -23,3 +26,6 @@ class Transaction(models.Model):
     amount = models.FloatField(null=True)
     date = models.DateTimeField(default=datetime.now, blank=True, null=True)
     description = models.TextField(null=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.category} - {self.date}"

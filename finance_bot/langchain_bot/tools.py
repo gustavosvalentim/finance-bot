@@ -96,16 +96,16 @@ class CreateTransactionTool(BaseTool):
         return f"Transaction created with ID {transaction.id}"
 
 
-class SearchCategoryToolInput(BaseModel):
-    """Input schema for SearchCategoryTool."""
+class SearchCategoryToolByNameInput(BaseModel):
+    """Input schema for SearchCategoryByTool."""
     category_name: str = Field(description="Name of the category to search")
     user: str = Field(description="User who owns the category")
 
 
-class SearchCategoryTool(BaseTool):
-    name: str = "SearchCategoryTool"
+class SearchCategoryByNameTool(BaseTool):
+    name: str = "SearchCategoryByNameTool"
     description: str = "Searches for categories in the database."
-    args_schema: Type[BaseModel] = SearchCategoryToolInput
+    args_schema: Type[BaseModel] = SearchCategoryToolByNameInput
 
     def _run(self, category_name: str, user: str) -> str:
         """Search for a category by name."""
