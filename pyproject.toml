@@ -20,4 +20,6 @@ dependencies = [
     "langgraph>=0.3.30",
     "python-dotenv>=1.1.0",
     "pytelegrambotapi>=4.26.0",
+    "channels[daphne]>=4.2.2",
+    "daphne>=4.2.0",
 ]

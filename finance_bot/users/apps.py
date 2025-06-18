@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AgentsConfig(AppConfig):
+class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'finance_bot.agents'
+    name = 'finance_bot.users'

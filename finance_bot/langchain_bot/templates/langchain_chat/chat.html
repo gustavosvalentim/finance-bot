@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Langchain Chat</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body>
+  <div class="container mx-auto h-96 w-full mt-12">
+    <div id="chat-log" class="h-full border border-1 rounded-xl overflow-y-auto"></div><br>
+
+    <div class="flex justify-center items-center gap-2">
+      <textarea id="chat-message-input" class="border border-1 rounded-xl px-1 py-1" cols="80" rows="4"
+        type="text"></textarea><br>
+      <button id="chat-message-submit" class="bg-blue-950 rounded-full px-4 py-2 text-white">Send</button>
+    </div>
+  </div>
+
+  {{ room_name|json_script:"room-name" }}
+
+  <script>
+    const botname = "Finance Bot";
+
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+    const chatSocket = new WebSocket(
+      'ws://'
+      + window.location.host
+      + '/ws/chat'
+    );
+
+    const updateChatLog = (sender_name, message) => {
+      const now = new Date(Date.now());
+      const newHtml = chatBubbleComponent
+        .replace("{sender_name}", sender_name)
+        .replace("{message}", message)
+        .replace("{time}", `${now.getHours()}:${now.getMinutes()}`)
+        .replace("{justify}", sender_name == botname ? "justify-end" : "justify-start");
+
+      document.querySelector('#chat-log').innerHTML += newHtml;
+    }
+
+    chatSocket.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+
+      updateChatLog(botname, data.message);
+    };
+
+    chatSocket.onclose = function (e) {
+      console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+      if (e.key === 'Enter') {  // enter, return
+        document.querySelector('#chat-message-submit').click();
+      }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+      const messageInputDom = document.querySelector('#chat-message-input');
+      const message = messageInputDom.value;
+
+      updateChatLog("User", message);
+
+      chatSocket.send(JSON.stringify({
+        'message': message
+      }));
+
+      messageInputDom.value = '';
+    };
+  </script>
+
+
+  <script>
+    const chatBubbleComponent = `
+    <div class="flex {justify} w-full px-4 py-2">
+      <div class="flex items-start gap-2.5">
+        <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+            <div class="flex items-center space-x-2 rtl:space-x-reverse">
+              <span class="text-sm font-semibold text-gray-900 dark:text-white">{sender_name}</span>
+              <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{time}</span>
+            </div>
+            <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">{message}</p>
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
+        </div>
+      </div>
+    </div>
+    `;
+  </script>
+</body>
+
+</html>

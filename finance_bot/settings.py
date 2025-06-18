@@ -16,6 +16,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 
+def get_env_list(name: str, separator: str = ',') -> list[str]:
+    val = os.environ.get(name, None)
+    if val is None:
+        return []
+    return val.split(separator)
+
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,9 +36,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-b6xnd-9(6-x5lfrfm52phbmp0t)5y-q#zb&w3u1q4nz=e+*b1w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = get_env_list("ALLOWED_HOSTS")
 
 API_KEY = os.environ.get("API_KEY", "1234567890") 
 
@@ -40,9 +47,10 @@ API_KEY = os.environ.get("API_KEY", "1234567890")
 
 INSTALLED_APPS = [
     'finance_bot.finance',
-    'finance_bot.agents',
     'finance_bot.langchain_bot',
     'finance_bot.telegram_bot',
+    'finance_bot.users',
+    'daphne',
     'drf_spectacular',
     'rest_framework',
     'django.contrib.admin',
@@ -88,19 +96,21 @@ WSGI_APPLICATION = 'finance_bot.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': os.environ.get("DATABASE_NAME", "finances"),
-    #     'USER': os.environ.get("DATABASE_USER", "usr_finance_bot"),
-    #     'PASSWORD': os.environ.get("DATABASE_PASSWORD", "postgres"),
-    #     'HOST': os.environ.get("DATABASE_HOST", "localhost"),
-    #     'PORT': os.environ.get("DATABASE_PORT", "5432"),
-    # }
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'db.sqlite'
     }
 }
+
+if os.environ.get("DATABASE_ENGINE", "sqlite3") == "postgresql":
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("DATABASE_NAME", "finances"),
+        'USER': os.environ.get("DATABASE_USER", "usr_finance_bot"),
+        'PASSWORD': os.environ.get("DATABASE_PASSWORD", "postgres"),
+        'HOST': os.environ.get("DATABASE_HOST", "localhost"),
+        'PORT': os.environ.get("DATABASE_PORT", "5432"),
+    }
 
 
 # Password validation
@@ -121,6 +131,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -138,6 +150,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -167,4 +181,31 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
+}
+
+# Channels
+# More information on https://channels.readthedocs.io/en/latest/index.html
+
+ASGI_APPLICATION = "finance_bot.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
+# Agent
+
+AGENT_SETTINGS = {
+    "tools": [
+        "finance_bot.langchain_bot.tools.CreateCategoryTool",
+        "finance_bot.langchain_bot.tools.CreateTransactionTool",
+        "finance_bot.langchain_bot.tools.SearchUserCategoriesTool",
+        "finance_bot.langchain_bot.tools.SearchCategoryByNameTool",
+        "finance_bot.langchain_bot.tools.SearchTransactionsTool",
+        "finance_bot.langchain_bot.tools.UpdateCategoryTool",
+        "finance_bot.langchain_bot.tools.UpdateTransactionTool",
+        "finance_bot.langchain_bot.tools.DeleteCategoryTool",
+        "finance_bot.langchain_bot.tools.DeleteTransactionTool",
+    ]
 }

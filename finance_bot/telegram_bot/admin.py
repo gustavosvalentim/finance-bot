@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from finance_bot.telegram_bot.models import TelegramUserSettings
+
+
+admin.site.register(TelegramUserSettings)
