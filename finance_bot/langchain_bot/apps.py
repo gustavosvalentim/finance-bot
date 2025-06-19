@@ -1,5 +1,3 @@
-import os
-
 from django.apps import AppConfig
 
 
@@ -17,8 +15,8 @@ class LangchainBotConfig(AppConfig):
             return
 
         if not AgentSettings.objects.filter(is_default=True).exists():
-            with open("conf/prompt.txt", "r", encoding="utf-8") as promptf:
-                prompt = promptf.read()
+            with open("conf/prompt.txt", "r", encoding="utf-8") as prompt_buf:
+                prompt = prompt_buf.read()
                 AgentSettings.objects.create(
                     prompt=prompt,
                     is_default=True,

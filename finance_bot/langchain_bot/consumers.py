@@ -9,15 +9,10 @@ class ChatConsumer(WebsocketConsumer):
     agent = FinanceAgent()
 
     def connect(self):
-        self.connections.update({
-            self.scope['user'].id: self.channel_name,
-        })
         self.accept()
 
     def disconnect(self, close_code):
-        for user_id in self.connections.keys():
-            if self.scope['user'].id == user_id:
-                self.connections.pop(user_id)
+        pass
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -25,4 +20,4 @@ class ChatConsumer(WebsocketConsumer):
 
         response = self.agent.invoke(self.scope['user'].id, self.scope['user'].first_name, message)
 
-        self.send(text_data=json.dumps({"message": response['messages'][-1].content}))
+        self.send(text_data=json.dumps({"message": response}))

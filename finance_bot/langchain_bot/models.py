@@ -21,6 +21,10 @@ class AgentSettings(models.Model):
     class Meta:
         verbose_name_plural = 'Agent settings'
 
+    def __str__(self):
+        suffix = " (default)" if self.is_default else ""
+        return ' '.join(self.model, suffix)
+
 
 class AgentSettingsToUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
