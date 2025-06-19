@@ -36,13 +36,13 @@ class MiddlewareManager:
         self.middlewares.append(middleware)
         return self
 
-    def execute(self, user_id: str, message: str) -> bool:
+    def execute(self, chat_id: str, user_id: str, message: str) -> bool:
         """
         Run all middlewares.
         """
 
         for middleware in self.middlewares:
-            if not middleware.handle(user_id, message):
+            if not middleware.handle(chat_id, user_id, message):
                 return False
 
         return True
