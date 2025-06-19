@@ -25,7 +25,7 @@ def handle_message(message):
     if not can_continue:
         return
 
-    telegram_user_settings = TelegramUserSettings.objects.filter(user=message.from_user.id).first()
+    telegram_user_settings = TelegramUserSettings.objects.filter(telegram_id=message.from_user.id).first()
     if telegram_user_settings is None:
         bot.send_message(message.chat.id, "Please setup your account first.")
         return
