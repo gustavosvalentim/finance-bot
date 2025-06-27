@@ -23,6 +23,10 @@ def get_env_list(name: str, separator: str = ',') -> list[str]:
     return val.split(separator)
 
 
+def get_env_bool(name: str, default: bool = False) -> bool:
+    return os.environ.get(name, 'True' if default else 'False').lower() in ('true', 'yes', '1')
+
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -197,6 +201,7 @@ CHANNEL_LAYERS = {
 # Agent
 
 AGENT_SETTINGS = {
+    "use_memory": get_env_bool("AGENT_USE_MEMORY", False),
     "tools": [
         "finance_bot.langchain_bot.tools.CreateCategoryTool",
         "finance_bot.langchain_bot.tools.CreateTransactionTool",

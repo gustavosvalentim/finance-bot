@@ -5,13 +5,12 @@ from django.conf import settings
 from finance_bot.module_utils import load_class
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
+from langchain.memory import ConversationSummaryBufferMemory
 from langgraph.prebuilt import create_react_agent
 from typing import Any
 
 
 class FinanceAgent:
-    memory = MemorySaver()
     default_config = {
         'configurable': {
             'thread_id': '1234567890',
@@ -398,10 +397,25 @@ class FinanceAgent:
     def __init__(self):
         self.tools = self.load_tools()
         self.model = ChatOpenAI(api_key=os.environ["OPENAI_API_KEY"], model="gpt-4o-mini")
-        self.agent_executor = create_react_agent(self.model, self.tools, checkpointer=self.memory)
+        
+        agent_executor_params = {}
+
+        if settings.AGENT_SETTINGS['use_memory']:
+            agent_executor_params['checkpointer'] = ConversationSummaryBufferMemory(llm=self.model, max_token_limit=1000)
+
+        self.agent_executor = create_react_agent(self.model, self.tools, **agent_executor_params)
 
     def load_tools(self):
         return [(load_class(tool_loc)()) for tool_loc in settings.AGENT_SETTINGS['tools']]
+
+    def get_config(self, user_id: str) -> dict[str, Any]:
+        config = self.default_config
+        config.update({
+            'configurable': {
+                'thread_id': user_id,
+            }
+        })
+        return config
 
     def invoke(self, user_id: str, user_nickname: str, query: str) -> (dict[str, Any] | Any):
         """Invoke the agent with the given query."""
@@ -411,7 +425,8 @@ class FinanceAgent:
             user_nickname=user_nickname,
             now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
+        config = self.get_config(user_id)
         return self.agent_executor.invoke(
             {'messages': [SystemMessage(content=system_prompt_formatted), HumanMessage(content=query)]},
-            config=self.default_config,
+            config=config,
         )
