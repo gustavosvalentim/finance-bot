@@ -47,7 +47,7 @@ class FinanceAgent:
         return create_react_agent(model=model, tools=tools, **agent_executor_params)
 
     def load(self, user_id: str, user_nickname: str, force_refresh: bool = False) -> str:
-        def create_invoker(agent_executor, system_prompt) -> str:
+        def create_invoker(agent_executor, config, system_prompt) -> str:
             def invoker(query):
                 return agent_executor.invoke(
                     {'messages': [SystemMessage(content=system_prompt), HumanMessage(content=query)]},
@@ -71,7 +71,7 @@ class FinanceAgent:
             now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
 
-        return create_invoker(agent_executor, system_prompt_formatted)
+        return create_invoker(agent_executor, config, system_prompt_formatted)
 
     def invoke(self, user_id: str, user_nickname: str, query: str) -> str:
         invoker = self.load(user_id, user_nickname)
