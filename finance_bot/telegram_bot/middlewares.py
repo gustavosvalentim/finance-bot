@@ -13,7 +13,7 @@ class Middleware(ABC):
         self.bot = bot
 
     @abstractmethod
-    def handle(self, user_id: str, message: str) -> bool:
+    def handle(self, chat_id: str, user_id: str, message: str) -> bool:
         """
         Handle the middleware logic.
         """
@@ -36,13 +36,13 @@ class MiddlewareManager:
         self.middlewares.append(middleware)
         return self
 
-    def execute(self, user_id: str, message: str) -> bool:
+    def execute(self, chat_id: str, user_id: str, message: str) -> bool:
         """
         Run all middlewares.
         """
 
         for middleware in self.middlewares:
-            if not middleware.handle(user_id, message):
+            if not middleware.handle(chat_id, user_id, message):
                 return False
 
         return True
@@ -57,7 +57,7 @@ class RateLimitMiddleware(Middleware):
     def __init__(self, bot: TeleBot):
         self.bot = bot
 
-    def handle(self, user_id: str, message: str) -> bool:
+    def handle(self, chat_id: str, user_id: str, message: str) -> bool:
         """
         Handle the rate limit for a user.
         """
@@ -77,7 +77,7 @@ class RateLimitMiddleware(Middleware):
         ).count()
         if message_count >= user_settings.rate_limit:
             self.bot.send_message(
-                user_settings.telegram_id,
+                chat_id,
                 "Você atingiu o limit de mensagens permitidas. Tente novamente mais tarde.",
             )
             return False
@@ -93,7 +93,7 @@ class UserInteractionMiddleware(Middleware):
     def __init__(self, bot: TeleBot):
         self.bot = bot
 
-    def handle(self, user_id: str, message: str) -> bool:
+    def handle(self, chat_id: str, user_id: str, message: str) -> bool:
         """
         Handle user interaction logging.
         """
