@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from langchain.agents import AgentExecutor
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -21,20 +20,6 @@ class FinanceAgent:
         self.tool_manager = ToolManager()
         self.config_service = AgentConfiguration(self.tool_manager)
         self.agent_factory = AgentFactory()
-    
-    def _create_agent_invoker(self, agent_executor, config, system_prompt):
-        """Create an invoker function for the agent"""
-        def invoker(query: str):
-            return agent_executor.invoke(
-                {
-                    'messages': [
-                        SystemMessage(content=system_prompt), 
-                        HumanMessage(content=query)
-                    ]
-                },
-                config=config,
-            )
-        return invoker
     
     def _format_system_prompt(self, prompt_template: str, user_id: str, user_nickname: str) -> str:
         """Format the system prompt with user context"""
