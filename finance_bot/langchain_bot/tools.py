@@ -6,6 +6,7 @@ from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
 from finance_bot.logging import get_logger
 
+
 class CreateCategoryToolInput(BaseModel):
     """Input schema for CreateCategoryTool."""
     user: str = Field(description="User who is creating the category")
@@ -148,7 +149,7 @@ class SearchUserCategoriesTool(BaseTool):
 
 class SearchTransactionsToolInput(BaseModel):
     """Search for all users transactions."""
-    user: str = Field(description="Name of the user that owns the transactions.")
+    user_id: str = Field(description="ID of the user that owns the transactions.")
     category: str | None = Field(default=None, description="Name of the category to search for transactions (optional).")
     start_date: datetime | None = Field(default=None, description="Start date to search for transactions (optional).")
     end_date: datetime | None = Field(default=None, description="End date to search for transactions (optional).")
@@ -161,16 +162,16 @@ class SearchTransactionsTool(BaseTool):
     description: str = "Searches the transactions from a user."
     args_schema: Type[BaseModel] = SearchTransactionsToolInput
 
-    def _run(self, user: str, category: str | None = None, start_date: datetime | None = None, end_date: datetime | None = None, limit: int | None = None) -> str:
+    def _run(self, user_id: str, category: str | None = None, start_date: datetime | None = None, end_date: datetime | None = None, limit: int | None = None) -> str:
         """Search for transactions by user and date range."""
 
         logger = get_logger('SearchTransactionsTool')
 
-        if not user:
+        if not user_id:
             logger.error("User can't be empty or null")
             return "No transactions were found."
 
-        filters: dict[str, Any] = {"user": user}
+        filters: dict[str, Any] = {"user": user_id}
         if start_date:
             filters['date__gte'] = timezone.make_aware(start_date)
         
@@ -180,7 +181,7 @@ class SearchTransactionsTool(BaseTool):
         if category:
             filters['category__normalized_name__icontains'] = category.upper()
 
-        logger.debug(f"Searching transactions for user '{user}' with filters: {filters}")
+        logger.debug(f"Searching transactions for user '{user_id}' with filters: {filters}")
 
         qs = Transaction.objects.filter(**filters).order_by("-date")
         if limit:
@@ -201,7 +202,7 @@ class SearchTransactionsTool(BaseTool):
 
 class UpdateTransactionToolInput(BaseModel):
     """Parameters for update transaction."""
-    user: str = Field(description="Name of the user that owns the categories.")
+    user_id: str = Field(description="ID of the user that owns the categories.")
     transaction: int = Field(description="Name of the transaction to update.")
     amount: int = Field(description="New amount of the transaction.")
 
@@ -212,8 +213,8 @@ class UpdateTransactionTool(BaseTool):
     description: str = "Updates a transaction."
     args_schema: Type[BaseModel] = UpdateTransactionToolInput
 
-    def _run(self, user: str, transaction: int, amount: int) -> str:
-        transaction = Transaction.objects.filter(id=transaction, user=user).first()
+    def _run(self, user_id: str, transaction: int, amount: int) -> str:
+        transaction = Transaction.objects.filter(id=transaction, user=user_id).first()
 
         if transaction is None:
             return "Transaction was not found."
