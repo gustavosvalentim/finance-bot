@@ -1,6 +1,7 @@
 import os
 
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Type
+from langchain_core.tools import BaseTool
 from langchain_openai.chat_models import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent

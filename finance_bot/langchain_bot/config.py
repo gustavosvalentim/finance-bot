@@ -15,7 +15,7 @@ class AgentConfiguration:
     def __init__(self, tool_manager: ToolManager):
         self.tool_manager = tool_manager
     
-    def get_agent_settings(user_id: str) -> Dict[str, Any]:
+    def get_agent_settings(self, user_id: str) -> Dict[str, Any]:
         """Get agent settings for a user without caching"""
         user_agent_settings = AgentSettingsToUser.objects.filter(
             user__id=user_id
@@ -34,10 +34,10 @@ class AgentConfiguration:
             'prompt': agent_settings.prompt,
         }
     
-    def get_tool_configurations() -> List[Type[BaseTool]]:
+    def get_tool_configurations(self) -> List[Type[BaseTool]]:
         """Get tools instances from settings"""
         return self.tool_manager.load_tools(settings.AGENT_SETTINGS.get('tools', []))
     
-    def get_memory_configuration() -> bool:
+    def get_memory_configuration(self) -> bool:
         """Get memory configuration from settings"""
         return settings.AGENT_SETTINGS.get('use_memory', False) 

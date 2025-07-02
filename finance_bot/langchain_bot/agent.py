@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Any
+
+from langchain.agents import AgentExecutor
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from .config import AgentConfigurationService
+from .config import AgentConfiguration
 from .tool_manager import ToolManager, ToolLoadingError
 from .agent_factory import AgentFactory, AgentCreationError
 
@@ -16,8 +18,8 @@ class FinanceAgent:
     """Main agent class that orchestrates all components"""
 
     def __init__(self):
-        self.config_service = AgentConfiguration()
         self.tool_manager = ToolManager()
+        self.config_service = AgentConfiguration(self.tool_manager)
         self.agent_factory = AgentFactory()
     
     def _create_agent_invoker(self, agent_executor, config, system_prompt):
