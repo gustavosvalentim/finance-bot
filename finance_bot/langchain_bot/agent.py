@@ -17,8 +17,7 @@ class FinanceAgent:
     """Main agent class that orchestrates all components"""
 
     def __init__(self):
-        self.tool_manager = ToolManager()
-        self.config_service = AgentConfiguration(self.tool_manager)
+        self.config_service = AgentConfiguration(ToolManager.instance())
         self.agent_factory = AgentFactory()
     
     def _format_system_prompt(self, prompt_template: str, user_id: str, user_nickname: str) -> str:
