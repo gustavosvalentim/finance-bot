@@ -4,20 +4,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Langchain Chat</title>
+  <title>Buffet Bot - Chat</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 <body>
-  <div class="container mx-auto h-96 w-full mt-12">
-    <div id="chat-log" class="h-full border border-1 rounded-xl overflow-y-auto"></div><br>
+  <div class="h-screen w-96 mx-auto sm:w-256">
+    <main>
+      <div class="h-[calc(100vh-174px)] overflow-hidden py-4">
+        <div class="flex flex-col justify-center h-full w-full mx-auto">
+          <div id="chat-log" class="flex-1 h-full w-full mb-12 border border-1 rounded-xl overflow-y-auto"></div>
 
-    <div class="flex justify-center items-center gap-2">
-      <textarea id="chat-message-input" class="border border-1 rounded-xl px-1 py-1" cols="80" rows="4"
-        type="text"></textarea><br>
-      <button id="chat-message-submit" class="bg-blue-950 rounded-full px-4 py-2 text-white">Send</button>
-    </div>
+          <div class="flex justify-center items-center gap-2">
+            <textarea id="chat-message-input" class="border border-1 rounded-xl px-1 py-1" cols="80" rows="4"
+              type="text"></textarea>
+            <button id="chat-message-submit" class="bg-blue-950 rounded-full px-4 py-2 text-white">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
   {{ room_name|json_script:"room-name" }}
@@ -41,7 +47,10 @@
         .replace("{time}", `${now.getHours()}:${now.getMinutes()}`)
         .replace("{justify}", sender_name == botname ? "justify-end" : "justify-start");
 
-      document.querySelector('#chat-log').innerHTML += newHtml;
+      const chatLog = document.querySelector('#chat-log');
+
+      chatLog.innerHTML += newHtml;
+      chatLog.scrollTop = chatLog.scrollHeight;
     }
 
     chatSocket.onmessage = function (e) {

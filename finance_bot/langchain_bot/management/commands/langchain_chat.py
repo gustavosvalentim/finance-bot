@@ -21,11 +21,8 @@ class Command(BaseCommand):
                     break
 
                 output = agent.invoke(os.environ.get("USER_ID"), os.environ.get("USER_NICKNAME"), user_input)
-
-                for message in output["messages"]:
-                    logger.debug(message)    
                 
-                print(f"Agent: {output['messages'][-1].content}")
+                print(f"Agent: {output}")
             except KeyboardInterrupt:
                 print("\nExiting...")
                 break

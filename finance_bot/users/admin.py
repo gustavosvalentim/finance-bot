@@ -4,5 +4,9 @@ from django.contrib.auth.admin import UserAdmin
 from finance_bot.users.models import User, UserInteraction
 
 
-admin.site.register(User, UserAdmin)
+class CustomUserAdmin(UserAdmin):
+    inlines = []
+
+
+admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserInteraction)
