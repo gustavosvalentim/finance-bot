@@ -2,6 +2,25 @@
 
 **Finance Bot** is an AI-powered assistant designed to help users **manage and organize their finances** directly from messaging platforms like **WhatsApp** and **Telegram**.
 
+## 🏗️ Architecture
+
+The application follows a clean, modular architecture with a clear separation of concerns:
+
+### Agent System
+
+- **BaseAgent**: Abstract base class providing common functionality for all agents
+- **FinanceAgent**: Specialized agent for financial operations
+- **AgentFactory**: Factory pattern for creating agent instances
+- **ClassLoader**: Secure class loading with validation
+- **AgentConfiguration**: Manages agent settings and configurations
+
+### Key Features
+
+- **Modular Design**: Easy to extend with new agent types and tools
+- **Secure**: Safe class loading and configuration management
+- **Scalable**: Stateless design allows for horizontal scaling
+- **Maintainable**: Clean separation of concerns and SOLID principles
+
 With Finance Bot, you can:
 
 - 🗂️ **Manage categories** to track and split different types of expenses
@@ -34,9 +53,18 @@ All Python dependencies are managed in `pyproject.toml` and installed via `uv`. 
 - drf-spectacular >= 0.28.0
 - channels[daphne] >= 4.2.2
 - langchain-openai >= 0.2.14
-- crewai[tools] >= 0.108.0
+- langgraph >= 0.0.0  # For agent orchestration
 - psycopg2-binary >= 2.9.10
-- selenium, webdriver-manager, googlesearch-python, langchain-ollama, langgraph, python-dotenv, pytelegrambotapi, gunicorn, daphne
+- python-dotenv >= 1.0.0
+- gunicorn >= 21.2.0
+- daphne >= 4.1.0
+
+### Agent System Dependencies
+
+- `langchain-core`: Core components for building agents
+- `langchain-openai`: OpenAI integration for language models
+- `langgraph`: For building stateful, multi-actor applications
+- `pydantic`: For data validation and settings management
 
 ---
 
@@ -97,14 +125,29 @@ python manage.py migrate
 
 ### Local Interactive Shell (Langchain Agent)
 
+You can interact with the AI agent directly from the command line using the `langchain_chat` management command. This is useful for testing, debugging, or quick interactions without needing a messaging client.
+
+**Basic Usage**
+
 Run the following command to start the interactive shell:
 
 ```sh
 python manage.py langchain_chat
 ```
 
-- This will start a local shell where you can interact with the AI agent as the user defined by `USER_ID` and `USER_NICKNAME` in your `.env` file.
-- Type your messages and receive AI-powered responses. Type `bye` to exit.
+- This will start a local shell where you can interact with the AI agent.
+- By default, it uses the `USER_ID` and `USER_NICKNAME` from your `.env` file.
+
+**Advanced Usage with Command-Line Arguments**
+
+You can also specify the user ID and name directly as command-line arguments. This is useful for testing different user contexts without changing your `.env` file.
+
+```sh
+python manage.py langchain_chat --user-id="<your_user_id>" --user-name="<your_user_name>"
+```
+
+- Replace `<your_user_id>` and `<your_user_name>` with the desired values.
+- Type your messages and receive AI-powered responses. Type `bye`, `exit`, or `quit` to exit the shell.
 
 ### Telegram Bot
 
@@ -160,8 +203,8 @@ Below are the environment variables available in `.env.example`:
 
 | Variable           | Description |
 |--------------------|-------------|
-| `USER_ID`          | The unique identifier for the user in local shell mode. Used by `langchain_chat`. Example: `+5511999999999` |
-| `USER_NICKNAME`    | The nickname for the user in local shell mode. Example: `"Mr. Buffet"` |
+| `USER_ID`          | The default user ID for the `langchain_chat` command if not provided as an argument. Example: `+5511999999999` |
+| `USER_NICKNAME`    | The default user name for the `langchain_chat` command if not provided as an argument. Example: `"Mr. Buffet"` |
 | `DEBUG`            | Enable debug logs. Set to `True` for verbose logging, `False` for production. |
 | `OPENAI_API_KEY`   | Your OpenAI API key for using GPT models. Required for AI features. Get it from [OpenAI](https://platform.openai.com/account/api-keys). |
 | `AGENT_USE_MEMORY` | Set to `True` to enable agent memory (helps with long conversations, but may use more tokens). |
