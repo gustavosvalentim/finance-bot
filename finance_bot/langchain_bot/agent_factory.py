@@ -14,15 +14,17 @@ from langchain_core.messages.utils import (
 def pre_model_hook(state):
     trimmed_messages = trim_messages(
         state["messages"],
-        max_tokens=40000,
+        max_tokens=48000,
         strategy="last",
         token_counter=count_tokens_approximately,
         start_on="human",
         allow_partial=False,
         include_system=True,
     )
-    return {"llm_input_messages": trimmed_messages}
 
+    state.update({ 'messages': trimmed_messages })
+
+    return state
 
 
 class AgentCreationError(Exception):
