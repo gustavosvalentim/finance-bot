@@ -1,10 +1,11 @@
 import os
 
 from django.core.management import BaseCommand
+
 from finance_bot.agents.factory import AgentFactory
-from finance_bot.agents.finance_agent import FinanceAgent
 from finance_bot.agents.config import AgentConfiguration
 from finance_bot.logging import get_logger
+from finance_bot.finance.constants import FINANCE_AGENT_NAME
 
 
 class Command(BaseCommand):
@@ -16,26 +17,22 @@ class Command(BaseCommand):
             type=str,
             default=os.getenv("USER_ID", "1"),
             help='User ID for the chat session',
+            required=True,
         )
         parser.add_argument(
             '--user-name',
             type=str,
             default=os.getenv("USER_NICKNAME", "Admin"),
             help='User name for the chat session',
+            required=True,
         )
 
     def handle(self, *args, **options):
         logger = get_logger('LangchainChatAgent')
         
         try:
-            # Register the FinanceAgent with the factory
-            AgentFactory.register_agent('finance', FinanceAgent)
-            
-            # Get user-specific configuration
             config = AgentConfiguration.get_agent_config(user_id=options['user_id'])
-            
-            # Create the agent instance
-            agent = AgentFactory.create('finance', config)
+            agent = AgentFactory.create(FINANCE_AGENT_NAME, config)
             
             self.stdout.write(self.style.SUCCESS('Finance Agent initialized. Type "bye" to exit.'))
             self.stdout.write("=" * 50)
@@ -51,10 +48,9 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.SUCCESS("\nExiting..."))
                         break
                     
-                    # Invoke the agent with the proper context
                     response = agent.invoke({
                         'user_id': options['user_id'],
-                        'user_name': options['user_name'],
+                        'user_nickname': options['user_name'],
                         'input': user_input
                     })
                     

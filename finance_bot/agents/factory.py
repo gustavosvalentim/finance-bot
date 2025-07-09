@@ -9,8 +9,6 @@ class AgentFactory:
     @classmethod
     def register_agent(cls, name: str, agent_class: Type[BaseAgent]) -> None:
         """Register an agent class with a name"""
-        if not issubclass(agent_class, BaseAgent):
-            raise ValueError(f"Agent class must inherit from BaseAgent: {agent_class}")
         cls._registry[name] = agent_class
     
     @classmethod

@@ -1,19 +1,21 @@
 import os
 
+from typing import List, Type
+
+from django.conf import settings
 from langchain.agents import AgentExecutor
 from langchain_openai.chat_models import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages.utils import trim_messages
-from langchain_core.prompt_values import ChatPromptValue
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import BaseTool
 
 from .base import BaseAgent, AgentError
 
-def _count_tokens(messages: list) -> int:
-    """Approximate token counting for message trimming"""
-    # This is a simplified token counter. For production, use a real tokenizer.
-    return sum(len(str(m.content)) for m in messages)
+from finance_bot.finance.constants import FINANCE_AGENT_NAME
+from finance_bot.agents.loader import ClassLoader, ClassLoadingError
+
 
 def pre_model_hook(state: dict, config: RunnableConfig) -> dict:
     """Hook to trim messages before LLM processing"""
@@ -22,24 +24,31 @@ def pre_model_hook(state: dict, config: RunnableConfig) -> dict:
 
     trimmed_messages = trim_messages(
         state["messages"],
-        max_tokens=4000,
+        max_tokens=48000,
         strategy="last",
-        token_counter=_count_tokens,
+        token_counter=ChatOpenAI(model='gpt-4o-mini'),
         start_on="human",
         allow_partial=False,
         include_system=True,
     )
     
-    # Create a new ChatPromptValue with the trimmed messages
-    prompt = ChatPromptValue(messages=trimmed_messages)
-    
-    # Return a dictionary with the expected structure for the next step
-    return {"messages": prompt.to_messages()}  # Or however the next component expects it
+    state.update({"messages": trimmed_messages})
+
+    return state
 
 class FinanceAgent(BaseAgent):
     """Finance-specific agent implementation"""
+
+    def _load_tools(self) -> List[Type[BaseTool]]:
+        """Load tools from configuration using ClassLoader"""
+        agent_config = settings.AGENT_SETTINGS.get('agents', {}).get(FINANCE_AGENT_NAME, {})
+        tool_paths = agent_config.get('tools', [])
+        try:
+            return ClassLoader.instantiate_classes(tool_paths)
+        except ClassLoadingError as e:
+            raise AgentError(f"Failed to load tools: {e}")
     
-    def _create_agent_executor(self) -> AgentExecutor:
+    def create_agent_executor(self) -> AgentExecutor:
         """Create LangChain agent executor for finance operations"""
         try:
             # Create language model
@@ -48,19 +57,18 @@ class FinanceAgent(BaseAgent):
                 api_key=os.getenv("OPENAI_API_KEY")
             )
             
-            # Configure executor parameters
             executor_params = {
                 'model': model,
-                'tools': self.tools,
+                'tools': self._load_tools(),
+                'pre_model_hook': pre_model_hook,
             }
             
-            # Add memory if configured
             if self.config.get('use_memory', False):
                 executor_params['checkpointer'] = MemorySaver()
             
-            # Create the agent with the pre_model_hook
             agent = create_react_agent(**executor_params)
-            return agent.with_hooks(pre_model_hook=pre_model_hook)
+
+            return agent
             
         except Exception as e:
             raise AgentError(f"Failed to create finance agent executor: {e}")

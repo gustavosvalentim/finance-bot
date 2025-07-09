@@ -3,24 +3,20 @@ import json
 from channels.generic.websocket import WebsocketConsumer
 
 from finance_bot.agents.factory import AgentFactory
-from finance_bot.agents.finance_agent import FinanceAgent
 from finance_bot.agents.config import AgentConfiguration
-
+from finance_bot.finance.apps import FINANCE_AGENT_NAME
 
 class ChatConsumer(WebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Register the FinanceAgent with the factory
-        AgentFactory.register_agent('finance', FinanceAgent)
-        # Initialize agent as None, will be set in connect
         self.agent = None
 
     def connect(self):
         try:
             # Get user-specific configuration and create agent
             config = AgentConfiguration.get_agent_config(user_id=str(self.scope['user'].id))
-            self.agent = AgentFactory.create('finance', config)
+            self.agent = AgentFactory.create(FINANCE_AGENT_NAME, config)
             self.accept()
         except Exception as e:
             self.close(code=1011)  # Internal error
