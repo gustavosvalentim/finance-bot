@@ -15,7 +15,7 @@ class ToolManager:
     _tools = []
 
     @staticmethod
-    def instance() -> ToolManager:
+    def instance() -> 'ToolManager':
         if ToolManager._instance is None:
             ToolManager._instance = ToolManager()
         return ToolManager._instance
