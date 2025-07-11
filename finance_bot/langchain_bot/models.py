@@ -23,7 +23,7 @@ class AgentSettings(models.Model):
 
     def __str__(self):
         suffix = " (default)" if self.is_default else ""
-        return ' '.join(self.model, suffix)
+        return ' '.join([self.model, suffix])
 
 
 class AgentSettingsToUser(models.Model):

@@ -28,7 +28,7 @@ class FinanceAgent:
             now=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
     
-    def load(self, user_id: str, user_nickname: str) -> (AgentExecutor, str):
+    def load(self, user_id: str, user_nickname: str) -> tuple[AgentExecutor, str]:
         """Load and configure an agent for the given user"""
         try:
             agent_settings = self.config_service.get_agent_settings(user_id)
@@ -37,7 +37,7 @@ class FinanceAgent:
             
             agent_executor = self.agent_factory.create_agent(
                 agent_settings, 
-                tools, 
+                tools,
                 use_memory
             )
             
