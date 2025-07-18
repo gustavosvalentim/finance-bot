@@ -31,7 +31,7 @@ def handle_message(message):
         return
 
     response = agent.invoke(telegram_user_settings.user.id, message.from_user.first_name, message.text)
-    bot.send_message(message.chat.id, response['messages'][-1].content)
+    bot.send_message(message.chat.id, response)
 
 
 class Command(BaseCommand):
