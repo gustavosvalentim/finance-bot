@@ -1,1 +1,0 @@
-FINANCE_AGENT_NAME = 'finance'

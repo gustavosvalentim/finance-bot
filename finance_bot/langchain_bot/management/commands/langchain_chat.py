@@ -2,10 +2,8 @@ import os
 
 from django.core.management import BaseCommand
 
-from finance_bot.agents.factory import AgentFactory
-from finance_bot.agents.config import AgentConfiguration
 from finance_bot.logging import get_logger
-from finance_bot.finance.constants import FINANCE_AGENT_NAME
+from finance_bot.finance.agent import FinanceAgent
 
 
 class Command(BaseCommand):
@@ -31,9 +29,8 @@ class Command(BaseCommand):
         logger = get_logger('LangchainChatAgent')
         
         try:
-            config = AgentConfiguration.get_agent_config(user_id=options['user_id'])
-            agent = AgentFactory.create(FINANCE_AGENT_NAME, config)
-            
+            agent = FinanceAgent()
+
             self.stdout.write(self.style.SUCCESS('Finance Agent initialized. Type "bye" to exit.'))
             self.stdout.write("=" * 50)
             
@@ -50,8 +47,8 @@ class Command(BaseCommand):
                     
                     response = agent.invoke({
                         'user_id': options['user_id'],
-                        'user_nickname': options['user_name'],
-                        'input': user_input
+                        'user_name': options['user_name'],
+                        'input': user_input,
                     })
                     
                     self.stdout.write(f"\n{self.style.HTTP_INFO('Agent:')} {response}")

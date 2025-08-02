@@ -15,8 +15,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from finance_bot.finance.constants import FINANCE_AGENT_NAME
-
 
 def get_env_list(name: str, separator: str = ',') -> list[str]:
     val = os.environ.get(name, None)
@@ -197,26 +195,5 @@ ASGI_APPLICATION = "finance_bot.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
-
-# Agent
-
-AGENT_SETTINGS = {
-    "use_memory": get_env_bool("AGENT_USE_MEMORY", False),
-    "agents": {
-        FINANCE_AGENT_NAME: {
-            "tools": [
-                "finance_bot.langchain_bot.tools.CreateCategoryTool",
-                "finance_bot.langchain_bot.tools.CreateTransactionTool",
-                "finance_bot.langchain_bot.tools.SearchUserCategoriesTool",
-                "finance_bot.langchain_bot.tools.SearchCategoryByNameTool",
-                "finance_bot.langchain_bot.tools.SearchTransactionsTool",
-                "finance_bot.langchain_bot.tools.UpdateCategoryTool",
-                "finance_bot.langchain_bot.tools.UpdateTransactionTool",
-                "finance_bot.langchain_bot.tools.DeleteCategoryTool",
-                "finance_bot.langchain_bot.tools.DeleteTransactionTool",
-            ]
-        }
     },
 }

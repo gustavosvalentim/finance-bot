@@ -9,18 +9,22 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body>
+<body class="bg-gray-800 text-white font-sans">
   <div class="h-screen w-96 mx-auto sm:w-256">
     <main>
-      <div class="h-[calc(100vh-174px)] overflow-hidden py-4">
-        <div class="flex flex-col justify-center h-full w-full mx-auto">
-          <div id="chat-log" class="flex-1 h-full w-full mb-12 border border-1 rounded-xl overflow-y-auto"></div>
-
-          <div class="flex justify-center items-center gap-2">
-            <textarea id="chat-message-input" class="border border-1 rounded-xl px-1 py-1" cols="80" rows="4"
-              type="text"></textarea>
-            <button id="chat-message-submit" class="bg-blue-950 rounded-full px-4 py-2 text-white">Send</button>
+      <div class="overflow-hidden py-4">
+        <div
+          class="h-96 md:h-256 flex flex-col justify-center w-full mx-auto border border-1 border-gray-600 rounded-t-xl">
+          <div class="flex justify-between w-full rounded-t-xl border-b border-gray-600">
+            <h1 class="text-2xl font-bold text-white p-4">Chat with {{ user_name }}</h1>
           </div>
+
+          <div id="chat-log" class="flex-1 h-96 md:h-256 w-full mb-12 overflow-y-auto"></div>
+        </div>
+        <div class="flex justify-center items-center gap-2 border border-gray-600 rounded-b-xl">
+          <input type="text" id="chat-message-input" class="border-0 w-full rounded-xl px-4 py-2 focus:outline-none"
+            placeholder="Type your message here..." autofocus>
+          <button id="chat-message-submit" class="px-4 py-2 text-white">Send</button>
         </div>
       </div>
     </main>
@@ -45,7 +49,8 @@
         .replace("{sender_name}", sender_name)
         .replace("{message}", message)
         .replace("{time}", `${now.getHours()}:${now.getMinutes()}`)
-        .replace("{justify}", sender_name == botname ? "justify-end" : "justify-start");
+        .replace("{justify}", sender_name == botname ? "justify-end" : "justify-start")
+        .replace("{rounded}", sender_name == botname ? "rounded-s-xl rounded-se-xl" : "rounded-e-xl rounded-es-xl");
 
       const chatLog = document.querySelector('#chat-log');
 
@@ -89,7 +94,7 @@
     const chatBubbleComponent = `
     <div class="flex {justify} w-full px-4 py-2">
       <div class="flex items-start gap-2.5">
-        <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+        <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 {rounded} dark:bg-gray-700">
             <div class="flex items-center space-x-2 rtl:space-x-reverse">
               <span class="text-sm font-semibold text-gray-900 dark:text-white">{sender_name}</span>
               <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{time}</span>

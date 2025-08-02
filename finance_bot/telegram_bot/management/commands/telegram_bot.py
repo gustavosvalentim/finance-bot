@@ -3,12 +3,10 @@ import telebot
 
 from django.core.management import BaseCommand
 
-from finance_bot.agents.factory import AgentFactory
-from finance_bot.agents.config import AgentConfiguration
 from finance_bot.logging import get_logger
+from finance_bot.finance.agent import FinanceAgent
 from finance_bot.telegram_bot import middlewares
 from finance_bot.telegram_bot.models import TelegramUserSettings
-from finance_bot.finance.constants import FINANCE_AGENT_NAME
 
 TELEGRAM_API_KEY = os.environ.get("TELEGRAM_API_KEY")
 
@@ -21,8 +19,7 @@ middleware_manager.register(middlewares.UserInteractionMiddleware(bot))
 
 @bot.message_handler(func=lambda msg: True)
 def handle_message(message):
-    config = AgentConfiguration.get_agent_config(user_id=str(message.from_user.id))
-    agent = AgentFactory.create(FINANCE_AGENT_NAME, config)
+    agent = FinanceAgent()
 
     can_continue = middleware_manager.execute(message.chat.id, message.from_user.id, message.text)
     if not can_continue:

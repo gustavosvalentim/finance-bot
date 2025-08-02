@@ -9,13 +9,7 @@ def room(request):
         # Create context with room name and tools
         context = {
             'room_name': str(request.user.id),
-            'tools': [
-                {
-                    'name': tool['name'],
-                    'description': tool.get('description', ''),
-                }
-                for tool in settings.AGENT_SETTINGS.get('tools', [])
-            ]
+            'user_name': " ".join([request.user.first_name, request.user.last_name]),
         }
         
         return render(request, "langchain_chat/chat.html", context)
