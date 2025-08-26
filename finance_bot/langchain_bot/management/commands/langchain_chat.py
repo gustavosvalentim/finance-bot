@@ -1,9 +1,10 @@
+import logging
 import os
 
 from django.core.management import BaseCommand
 
-from finance_bot.logging import get_logger
 from finance_bot.finance.agent import FinanceAgent
+from finance_bot.users.models import User
 
 
 class Command(BaseCommand):
@@ -17,19 +18,13 @@ class Command(BaseCommand):
             help='User ID for the chat session',
             required=True,
         )
-        parser.add_argument(
-            '--user-name',
-            type=str,
-            default=os.getenv("USER_NICKNAME", "Admin"),
-            help='User name for the chat session',
-            required=True,
-        )
 
     def handle(self, *args, **options):
-        logger = get_logger('LangchainChatAgent')
+        logger = logging.getLogger('LangchainChatAgent')
         
         try:
             agent = FinanceAgent()
+            user = User.objects.filter(pk=options['user_id']).first()
 
             self.stdout.write(self.style.SUCCESS('Finance Agent initialized. Type "bye" to exit.'))
             self.stdout.write("=" * 50)
@@ -47,7 +42,7 @@ class Command(BaseCommand):
                     
                     response = agent.invoke({
                         'user_id': options['user_id'],
-                        'user_name': options['user_name'],
+                        'user_name': user.first_name,
                         'input': user_input,
                     })
                     

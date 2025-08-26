@@ -1,9 +1,9 @@
+import logging
 import os
 import telebot
 
 from django.core.management import BaseCommand
 
-from finance_bot.logging import get_logger
 from finance_bot.finance.agent import FinanceAgent
 from finance_bot.telegram_bot import middlewares
 from finance_bot.telegram_bot.models import TelegramUserSettings
@@ -32,8 +32,7 @@ def handle_message(message):
 
     response = agent.invoke({
         'user_id': str(message.from_user.id),
-        'user_name': message.from_user.first_name,
-        'input': message.text
+        'input': message.text,
     })
     
     bot.send_message(message.chat.id, response)
@@ -43,7 +42,7 @@ class Command(BaseCommand):
     help = "Telegram bot"
 
     def handle(self, *args, **kwargs):
-        logger = get_logger("MrBuffet Bot")
+        logger = logging.getLogger("MrBuffet Bot")
 
         try:
             logger.info("Mr Buffet says hi.")

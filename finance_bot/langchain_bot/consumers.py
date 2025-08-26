@@ -1,8 +1,13 @@
 import json
+import logging
 
 from channels.generic.websocket import WebsocketConsumer
 
 from finance_bot.finance.agent import FinanceAgent
+
+
+logger = logging.getLogger(__name__)
+
 
 class ChatConsumer(WebsocketConsumer):
 
@@ -12,10 +17,11 @@ class ChatConsumer(WebsocketConsumer):
 
     def connect(self):
         try:
-            # Get user-specific configuration and create agent
+            logger.info(f"User {self.scope['user']} connected")
             self.agent = FinanceAgent()
             self.accept()
         except Exception as e:
+            logger.error(f"Error connecting user {self.scope['user']}: {e}")
             self.close(code=1011)  # Internal error
             raise
 
@@ -34,7 +40,7 @@ class ChatConsumer(WebsocketConsumer):
             text_data_json = json.loads(text_data)
             message = text_data_json["message"]
 
-            response = self.agent.invoke_workflow({
+            response = self.agent.invoke({
                 'user_id': str(self.scope['user'].id),
                 'user_name': self.scope['user'].first_name or 'User',
                 'input': message
@@ -47,6 +53,7 @@ class ChatConsumer(WebsocketConsumer):
                 "message": "Invalid JSON format in message"
             }))
         except Exception as e:
+            logger.error(f"Error processing message {message} from user {self.scope['user']}: {e}")
             self.send(text_data=json.dumps({
-                "message": f"Error processing your request: {str(e)}"
+                "message": "There was an error processing your request"
             }))

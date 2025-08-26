@@ -15,6 +15,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+from finance_bot.logging import configure_logger
+
 
 def get_env_list(name: str, separator: str = ',') -> list[str]:
     val = os.environ.get(name, None)
@@ -28,6 +30,8 @@ def get_env_bool(name: str, default: bool = False) -> bool:
 
 
 load_dotenv()
+
+configure_logger()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
