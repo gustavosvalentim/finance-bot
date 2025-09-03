@@ -5,37 +5,73 @@ import telebot
 from django.core.management import BaseCommand
 
 from finance_bot.finance.agent import FinanceAgent
-from finance_bot.telegram_bot import middlewares
 from finance_bot.telegram_bot.models import TelegramUserSettings
+from finance_bot.users.models import UserInteraction
 
 TELEGRAM_API_KEY = os.environ.get("TELEGRAM_API_KEY")
 
 bot = telebot.TeleBot(TELEGRAM_API_KEY)
+agent = FinanceAgent()
 
-middleware_manager = middlewares.MiddlewareManager()
-middleware_manager.register(middlewares.RateLimitMiddleware(bot))
-middleware_manager.register(middlewares.UserInteractionMiddleware(bot))
+
+def rate_limit_exceeded(user_id: str) -> bool:
+    user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id).first()
+    if not user_settings.rate_limit_enabled:
+        return False
+    
+    message_count = UserInteraction.objects.filter(
+        user=user_settings.user,
+        interaction_type=UserInteraction.InteractionType.MESSAGE,
+        # Assuming you want a time frame validation
+        # created_at__gte=timezone.now() - timedelta(seconds=self.time_frame),
+    ).count()
+    if message_count >= user_settings.rate_limit:
+        return True
+    return False
+
+
+def save_interaction(user_id: str, message: str, response: str):
+    user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id).first()
+    if not user_settings:
+        return
+
+    user_interaction = UserInteraction.objects.create(
+        user=user_settings.user,
+        source="telegram",
+        interaction_type=UserInteraction.InteractionType.MESSAGE,
+        interaction_data=message,
+    )
+
+    # This is the answer from the AI
+    UserInteraction.objects.create(
+        user=user_settings.user,
+        source="telegram",
+        interaction_type=UserInteraction.InteractionType.RESPONSE,
+        interaction_data=response,
+        parent=user_interaction,
+    )
 
 
 @bot.message_handler(func=lambda msg: True)
 def handle_message(message):
-    agent = FinanceAgent()
-
-    can_continue = middleware_manager.execute(message.chat.id, message.from_user.id, message.text)
-    if not can_continue:
-        return
+    if rate_limit_exceeded(message.from_user.id):
+        bot.send_message(
+            message.chat.id,
+            "Você atingiu o limit de mensagens permitidas. Tente novamente mais tarde.",
+        )
 
     telegram_user_settings = TelegramUserSettings.objects.filter(telegram_id=message.from_user.id).first()
     if telegram_user_settings is None:
-        bot.send_message(message.chat.id, "Please setup your account first.")
+        bot.send_message(message.chat.id, "Por favor, configure sua conta primeiro.")
         return
 
     response = agent.invoke({
         'user_id': str(message.from_user.id),
         'input': message.text,
     })
-    
+
     bot.send_message(message.chat.id, response)
+    save_interaction(message.from_user.id, message.text, response)
 
 
 class Command(BaseCommand):

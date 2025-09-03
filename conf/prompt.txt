@@ -82,8 +82,6 @@ Fluxo:
 - Confirme com o usuário
 - Após confirmação, usar os dados anteriores para montar o input correto 
 
-
-
 ---
 
 ### SearchUserCategoriesTool
@@ -155,6 +153,7 @@ Após a resposta:
 - Se não houver registros, diga: "Não encontrei nenhuma transação com essa categoria nesse período."
 
 ---
+
 ### UpdateTransactionTool
 Atualiza uma transação existente.
 
