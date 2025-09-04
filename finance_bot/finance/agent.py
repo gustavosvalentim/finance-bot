@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from typing import Any, Dict
+from typing_extensions import TypedDict
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages.utils import trim_messages, count_tokens_approximately
@@ -8,8 +9,13 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
 from finance_bot.finance import tools
-from finance_bot.langchain_bot.models import AgentSettings, AgentSettingsToUser
+from finance_bot.langchain_bot.models import AgentSettings
 from finance_bot.users.models import User
+
+
+class AgentInvokeArgs(TypedDict):
+    user_id: str
+    message: str
 
 
 def pre_model_hook(state):
@@ -39,13 +45,12 @@ class FinanceAgent:
     ]
 
     def _get_agent_configuration(self, user_id: str) -> Dict[str, Any]:
-        user_config = AgentSettingsToUser.objects.filter(user__pk=user_id).first()
-        agent_config = user_config.agent_settings if user_config else None
-
-        if not agent_config:
-            agent_config = AgentSettings.objects.filter(is_default=True).first()
-
         user = User.objects.filter(pk=user_id).first()
+        agent_config = AgentSettings.objects.find_by_user(user)
+
+        if agent_config is None:
+            raise ValueError("No agent configuration found for user.")
+
         prompt = agent_config.prompt.format(user_name=user.first_name, user_id=user.pk, now=datetime.now().isoformat())
 
         return {
@@ -54,7 +59,12 @@ class FinanceAgent:
         }
 
     def _get_agent(self, agent_configuration: Dict[str, Any]):
-        model = ChatOpenAI(model=agent_configuration['model'], api_key=os.getenv("OPENAI_API_KEY"))
+        model = ChatOpenAI(
+            model=agent_configuration['model'],
+            api_key=os.getenv("OPENAI_API_KEY"),
+            reasoning_effort='minimal',
+            temperature=1,
+        )
         agent = create_react_agent(
             model,
             self.agent_tools,
@@ -64,22 +74,33 @@ class FinanceAgent:
         )
         return agent
 
-    def invoke(self, input_value: Dict[str, Any]) -> Dict[str, Any]:
+    def invoke(self, args: AgentInvokeArgs) -> str:
         """Invoke the agent with the given input value.
 
-        Input value is a dict and should contain the following keys:
-        - user_id: The ID of the user invoking the agent.
-        - input: The input message for the agent.
+        Parameters:
+            args (AgentInvokeArgs): A dictionary containing 'user_id' and 'message' keys.
+
+        Returns:
+            str: The agent response. 
         """
 
-        agent_config = self._get_agent_configuration(input_value['user_id'])
+        user_id = args.get('user_id')
+        message = args.get('message')
+
+        if user_id is None or user_id.strip() == '':
+            raise ValueError("User ID cannot be empty.")
+
+        if message is None or message.strip() == '':
+            raise ValueError("Message cannot be empty.")
+
+        agent_config = self._get_agent_configuration(user_id)
         agent = self._get_agent(agent_config)
         invoke_config = {
             'configurable': {
-                'thread_id': input_value['user_id'],
+                'thread_id': user_id,
             }
         }
 
-        response = agent.invoke({'messages': ('human', input_value['input'])}, config=invoke_config)
+        response = agent.invoke({'messages': ('human', message)}, config=invoke_config)
 
         return response['messages'][-1].content

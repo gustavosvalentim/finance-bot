@@ -53,7 +53,7 @@ All Python dependencies are managed in `pyproject.toml` and installed via `uv`. 
 - drf-spectacular >= 0.28.0
 - channels[daphne] >= 4.2.2
 - langchain-openai >= 0.2.14
-- langgraph >= 0.0.0  # For agent orchestration
+- langgraph >= 0.0.0 # For agent orchestration
 - psycopg2-binary >= 2.9.10
 - python-dotenv >= 1.0.0
 - gunicorn >= 21.2.0
@@ -136,7 +136,7 @@ python manage.py langchain_chat
 ```
 
 - This will start a local shell where you can interact with the AI agent.
-- By default, it uses the `USER_ID` and `USER_NICKNAME` from your `.env` file.
+- By default, it uses the `USER_ID` from your `.env` file.
 
 **Advanced Usage with Command-Line Arguments**
 
@@ -201,23 +201,23 @@ docker-compose up --build
 
 Below are the environment variables available in `.env.example`:
 
-| Variable           | Description |
-|--------------------|-------------|
-| `USER_ID`          | The default user ID for the `langchain_chat` command if not provided as an argument. Example: `+5511999999999` |
-| `USER_NICKNAME`    | The default user name for the `langchain_chat` command if not provided as an argument. Example: `"Mr. Buffet"` |
-| `DEBUG`            | Enable debug logs. Set to `True` for verbose logging, `False` for production. |
-| `OPENAI_API_KEY`   | Your OpenAI API key for using GPT models. Required for AI features. Get it from [OpenAI](https://platform.openai.com/account/api-keys). |
-| `AGENT_USE_MEMORY` | Set to `True` to enable agent memory (helps with long conversations, but may use more tokens). |
-| `TELEGRAM_API_KEY` | Your Telegram bot API key. Required to run the Telegram bot. Get it from [BotFather](https://core.telegram.org/bots#botfather). |
-| `ALLOWED_HOSTS`    | Comma-separated list of allowed hosts for Django. Required for admin panel and production deployments. |
-| `DATABASE_ENGINE`  | (Optional) Set to `postgres` to use PostgreSQL instead of SQLite. |
-| `DATABASE_HOST`    | Database host (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_PORT`    | Database port (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_NAME`    | Database name (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_USER`    | Database user (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_PASSWORD`| Database password (used if `DATABASE_ENGINE=postgres`). |
+| Variable            | Description                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `USER_ID`           | The default user ID for the `langchain_chat` command if not provided as an argument. Example: `1`                                       |
+| `DEBUG`             | Enable debug logs. Set to `True` for verbose logging, `False` for production.                                                           |
+| `OPENAI_API_KEY`    | Your OpenAI API key for using GPT models. Required for AI features. Get it from [OpenAI](https://platform.openai.com/account/api-keys). |
+| `AGENT_USE_MEMORY`  | Set to `True` to enable agent memory (helps with long conversations, but may use more tokens).                                          |
+| `TELEGRAM_API_KEY`  | Your Telegram bot API key. Required to run the Telegram bot. Get it from [BotFather](https://core.telegram.org/bots#botfather).         |
+| `ALLOWED_HOSTS`     | Comma-separated list of allowed hosts for Django. Required for admin panel and production deployments.                                  |
+| `DATABASE_ENGINE`   | (Optional) Set to `postgres` to use PostgreSQL instead of SQLite.                                                                       |
+| `DATABASE_HOST`     | Database host (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_PORT`     | Database port (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_NAME`     | Database name (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_USER`     | Database user (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_PASSWORD` | Database password (used if `DATABASE_ENGINE=postgres`).                                                                                 |
 
 **Note:**
+
 - If you do not set `DATABASE_ENGINE`, the app will use SQLite by default.
 - For production, it is recommended to use PostgreSQL and set all database variables.
 - The `.env.example` file contains comments and examples for each variable.
@@ -228,8 +228,8 @@ Below are the environment variables available in `.env.example`:
 
 Finance Bot can be integrated with:
 
-- WhatsApp *(integration details coming soon)*
-- Telegram *(see above for setup)*
+- WhatsApp _(integration details coming soon)_
+- Telegram _(see above for setup)_
 
 ---
 

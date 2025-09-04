@@ -10,13 +10,19 @@ class AgentSettingsManager(models.Manager):
             raise ValueError("Can't have more than one default agent settings")
         super().create(*args, **kwargs)
 
+    def find_by_user(self, user: User):
+        user_settings = self.filter(agentsettingstouser__user=user)
+        if user_settings.exists():
+            return user_settings.first().agent_settings
+        return self.filter(is_default=True).first()
+
 
 class AgentSettings(models.Model):
     prompt = models.TextField()
-    model = models.CharField(max_length=100, default="gpt-4o-mini")
+    model = models.CharField(max_length=100, default="gpt-5-mini")
     is_default = models.BooleanField(default=False)
 
-    objects = AgentSettingsManager
+    objects = AgentSettingsManager()
 
     class Meta:
         verbose_name_plural = 'Agent settings'

@@ -24,7 +24,6 @@ class Command(BaseCommand):
         
         try:
             agent = FinanceAgent()
-            user = User.objects.filter(pk=options['user_id']).first()
 
             self.stdout.write(self.style.SUCCESS('Finance Agent initialized. Type "bye" to exit.'))
             self.stdout.write("=" * 50)
@@ -42,8 +41,7 @@ class Command(BaseCommand):
                     
                     response = agent.invoke({
                         'user_id': options['user_id'],
-                        'user_name': user.first_name,
-                        'input': user_input,
+                        'message': user_input,
                     })
                     
                     self.stdout.write(f"\n{self.style.HTTP_INFO('Agent:')} {response}")

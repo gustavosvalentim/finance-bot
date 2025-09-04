@@ -42,8 +42,7 @@ class ChatConsumer(WebsocketConsumer):
 
             response = self.agent.invoke({
                 'user_id': str(self.scope['user'].id),
-                'user_name': self.scope['user'].first_name or 'User',
-                'input': message
+                'message': message
             })
 
             self.send(text_data=json.dumps({"message": response}))
