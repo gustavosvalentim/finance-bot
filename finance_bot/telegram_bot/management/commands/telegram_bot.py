@@ -6,7 +6,7 @@ from django.core.management import BaseCommand
 
 from finance_bot.finance.agent import FinanceAgent
 from finance_bot.telegram_bot.models import TelegramUserSettings
-from finance_bot.users.models import UserInteraction
+from finance_bot.users.models import User, UserInteraction
 from finance_bot.telegram_bot.handlers import (
     finish_registration,
     is_pending_registration,
@@ -37,12 +37,12 @@ def rate_limit_exceeded(user_id: str) -> bool:
 
 
 def save_interaction(user_id: str, message: str, response: str):
-    user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id).first()
-    if not user_settings:
+    user = User.objects.filter(pk=user_id).first()
+    if not user:
         return
 
     user_interaction = UserInteraction.objects.create(
-        user=user_settings.user,
+        user=user,
         source="telegram",
         interaction_type=UserInteraction.InteractionType.MESSAGE,
         interaction_data=message,
@@ -50,7 +50,7 @@ def save_interaction(user_id: str, message: str, response: str):
 
     # This is the answer from the AI
     UserInteraction.objects.create(
-        user=user_settings.user,
+        user=user,
         source="telegram",
         interaction_type=UserInteraction.InteractionType.RESPONSE,
         interaction_data=response,
@@ -92,8 +92,8 @@ def handle_message(message):
         'message': message.text,
     })
 
-    bot.send_message(message.chat.id, response)
     save_interaction(user_id, message.text, response)
+    bot.send_message(message.chat.id, response)
 
 
 class Command(BaseCommand):
