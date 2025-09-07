@@ -51,7 +51,11 @@ class FinanceAgent:
         if agent_config is None:
             raise ValueError("No agent configuration found for user.")
 
-        prompt = agent_config.prompt.format(user_name=user.first_name, user_id=user.pk, now=datetime.now().isoformat())
+        prompt = agent_config.prompt.format(
+            user_name=user.first_name,
+            user_id=user.pk,
+            now=datetime.now().isoformat(),
+        )
 
         return {
             'model': agent_config.model,
@@ -59,12 +63,24 @@ class FinanceAgent:
         }
 
     def _get_agent(self, agent_configuration: Dict[str, Any]):
+        model_kwargs = {}
+        model = agent_configuration.get('model', None)
+
+        if model is None:
+            raise ValueError("Model not specified in agent configuration.")
+
+        if agent_configuration['model'].startswith('gpt-5'):
+            model_kwargs.update({
+                'reasoning_effort': 'minimal',
+                'temperature': 1,
+            })
+
         model = ChatOpenAI(
             model=agent_configuration['model'],
             api_key=os.getenv("OPENAI_API_KEY"),
-            reasoning_effort='minimal',
-            temperature=1,
+            **model_kwargs,
         )
+
         agent = create_react_agent(
             model,
             self.agent_tools,
@@ -72,6 +88,7 @@ class FinanceAgent:
             checkpointer=self.memory,
             pre_model_hook=pre_model_hook
         )
+
         return agent
 
     def invoke(self, args: AgentInvokeArgs) -> str:
