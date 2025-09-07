@@ -13,7 +13,7 @@ class AgentSettingsManager(models.Manager):
     def find_by_user(self, user: User):
         user_settings = self.filter(agentsettingstouser__user=user)
         if user_settings.exists():
-            return user_settings.first().agent_settings
+            return user_settings.first()
         return self.filter(is_default=True).first()
 
 
