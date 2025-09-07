@@ -26,10 +26,11 @@ class UserInteraction(models.Model):
 
     class InteractionType(models.TextChoices):
         MESSAGE = "message", "Message"
+        RESPONSE = "response", "Response"
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     source = models.CharField(max_length=50)
-    interaction_type = models.CharField(max_length=7, choices=InteractionType.choices)
+    interaction_type = models.CharField(max_length=8, choices=InteractionType.choices)
     interaction_data = models.TextField(blank=True, default="")
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
