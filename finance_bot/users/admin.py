@@ -72,6 +72,8 @@ class CustomUserInteractionAdmin(admin.ModelAdmin):
     list_display = ('user', 'interaction_type', 'interaction_data', 'created_at')
     search_fields = ('user__username', 'interaction_type', 'parent')
 
+    ordering = ('-created_at',)
+
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserInteraction, CustomUserInteractionAdmin)
