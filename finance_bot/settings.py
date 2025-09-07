@@ -15,6 +15,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+from finance_bot.logging import configure_logger
+
 
 def get_env_list(name: str, separator: str = ',') -> list[str]:
     val = os.environ.get(name, None)
@@ -28,6 +30,8 @@ def get_env_bool(name: str, default: bool = False) -> bool:
 
 
 load_dotenv()
+
+configure_logger()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -196,21 +200,4 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
-}
-
-# Agent
-
-AGENT_SETTINGS = {
-    "use_memory": get_env_bool("AGENT_USE_MEMORY", False),
-    "tools": [
-        "finance_bot.langchain_bot.tools.CreateCategoryTool",
-        "finance_bot.langchain_bot.tools.CreateTransactionTool",
-        "finance_bot.langchain_bot.tools.SearchUserCategoriesTool",
-        "finance_bot.langchain_bot.tools.SearchCategoryByNameTool",
-        "finance_bot.langchain_bot.tools.SearchTransactionsTool",
-        "finance_bot.langchain_bot.tools.UpdateCategoryTool",
-        "finance_bot.langchain_bot.tools.UpdateTransactionTool",
-        "finance_bot.langchain_bot.tools.DeleteCategoryTool",
-        "finance_bot.langchain_bot.tools.DeleteTransactionTool",
-    ]
 }

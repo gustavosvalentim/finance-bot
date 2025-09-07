@@ -1,10 +1,10 @@
+import logging
 from datetime import datetime
 from typing import Any, Type
 from django.utils import timezone
 from pydantic import BaseModel, Field, field_validator
 from langchain.tools import BaseTool
 from finance_bot.finance.models import Category, Transaction
-from finance_bot.logging import get_logger
 
 
 class CreateCategoryToolInput(BaseModel):
@@ -21,7 +21,7 @@ class CreateCategoryTool(BaseTool):
     def _run(self, user: str, category_name: str) -> str:
         """Create a new category."""
 
-        logger = get_logger('CreateCategoryTool')
+        logger = logging.getLogger('CreateCategoryTool')
 
         normalized = category_name.strip().upper()
         logger.debug(f"Creating category '{normalized}' for user '{user}'")
@@ -74,7 +74,7 @@ class CreateTransactionTool(BaseTool):
     ) -> str:
         """Create a new transaction."""
 
-        logger = get_logger('CreateTransactionTool')
+        logger = logging.getLogger('CreateTransactionTool')
 
         if date is None:
             date = timezone.now()
@@ -111,7 +111,7 @@ class SearchCategoryByNameTool(BaseTool):
     def _run(self, category_name: str, user: str) -> str:
         """Search for a category by name."""
 
-        logger = get_logger('SearchCategoryTool')
+        logger = logging.getLogger('SearchCategoryTool')
 
         logger.debug(f"Searching for category '{category_name}' for user '{user}'")
 
@@ -165,7 +165,7 @@ class SearchTransactionsTool(BaseTool):
     def _run(self, user_id: str, category: str | None = None, start_date: datetime | None = None, end_date: datetime | None = None, limit: int | None = None) -> str:
         """Search for transactions by user and date range."""
 
-        logger = get_logger('SearchTransactionsTool')
+        logger = logging.getLogger('SearchTransactionsTool')
 
         if not user_id:
             logger.error("User can't be empty or null")

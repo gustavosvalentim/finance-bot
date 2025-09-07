@@ -2,6 +2,25 @@
 
 **Finance Bot** is an AI-powered assistant designed to help users **manage and organize their finances** directly from messaging platforms like **WhatsApp** and **Telegram**.
 
+## 🏗️ Architecture
+
+The application follows a clean, modular architecture with a clear separation of concerns:
+
+### Agent System
+
+- **BaseAgent**: Abstract base class providing common functionality for all agents
+- **FinanceAgent**: Specialized agent for financial operations
+- **AgentFactory**: Factory pattern for creating agent instances
+- **ClassLoader**: Secure class loading with validation
+- **AgentConfiguration**: Manages agent settings and configurations
+
+### Key Features
+
+- **Modular Design**: Easy to extend with new agent types and tools
+- **Secure**: Safe class loading and configuration management
+- **Scalable**: Stateless design allows for horizontal scaling
+- **Maintainable**: Clean separation of concerns and SOLID principles
+
 With Finance Bot, you can:
 
 - 🗂️ **Manage categories** to track and split different types of expenses
@@ -34,9 +53,18 @@ All Python dependencies are managed in `pyproject.toml` and installed via `uv`. 
 - drf-spectacular >= 0.28.0
 - channels[daphne] >= 4.2.2
 - langchain-openai >= 0.2.14
-- crewai[tools] >= 0.108.0
+- langgraph >= 0.0.0 # For agent orchestration
 - psycopg2-binary >= 2.9.10
-- selenium, webdriver-manager, googlesearch-python, langchain-ollama, langgraph, python-dotenv, pytelegrambotapi, gunicorn, daphne
+- python-dotenv >= 1.0.0
+- gunicorn >= 21.2.0
+- daphne >= 4.1.0
+
+### Agent System Dependencies
+
+- `langchain-core`: Core components for building agents
+- `langchain-openai`: OpenAI integration for language models
+- `langgraph`: For building stateful, multi-actor applications
+- `pydantic`: For data validation and settings management
 
 ---
 
@@ -95,16 +123,18 @@ python manage.py migrate
 
 ## ▶️ Running the Bot
 
+> Before running the bot, follow the instructions on [How to create a superuser](#how-to-create-a-superuser).
+
 ### Local Interactive Shell (Langchain Agent)
 
-Run the following command to start the interactive shell:
+You can interact with the AI agent directly from the command line using the `langchain_chat` management command. This is useful for testing, debugging, or quick interactions without needing a messaging client.
 
 ```sh
-python manage.py langchain_chat
+python manage.py langchain_chat --user-id="<your_user_id>"
 ```
 
-- This will start a local shell where you can interact with the AI agent as the user defined by `USER_ID` and `USER_NICKNAME` in your `.env` file.
-- Type your messages and receive AI-powered responses. Type `bye` to exit.
+- Replace `<your_user_id>` with the desired values.
+- Type your messages and receive AI-powered responses. Type `bye`, `exit`, or `quit` to exit the shell.
 
 ### Telegram Bot
 
@@ -158,23 +188,21 @@ docker-compose up --build
 
 Below are the environment variables available in `.env.example`:
 
-| Variable           | Description |
-|--------------------|-------------|
-| `USER_ID`          | The unique identifier for the user in local shell mode. Used by `langchain_chat`. Example: `+5511999999999` |
-| `USER_NICKNAME`    | The nickname for the user in local shell mode. Example: `"Mr. Buffet"` |
-| `DEBUG`            | Enable debug logs. Set to `True` for verbose logging, `False` for production. |
-| `OPENAI_API_KEY`   | Your OpenAI API key for using GPT models. Required for AI features. Get it from [OpenAI](https://platform.openai.com/account/api-keys). |
-| `AGENT_USE_MEMORY` | Set to `True` to enable agent memory (helps with long conversations, but may use more tokens). |
-| `TELEGRAM_API_KEY` | Your Telegram bot API key. Required to run the Telegram bot. Get it from [BotFather](https://core.telegram.org/bots#botfather). |
-| `ALLOWED_HOSTS`    | Comma-separated list of allowed hosts for Django. Required for admin panel and production deployments. |
-| `DATABASE_ENGINE`  | (Optional) Set to `postgres` to use PostgreSQL instead of SQLite. |
-| `DATABASE_HOST`    | Database host (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_PORT`    | Database port (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_NAME`    | Database name (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_USER`    | Database user (used if `DATABASE_ENGINE=postgres`). |
-| `DATABASE_PASSWORD`| Database password (used if `DATABASE_ENGINE=postgres`). |
+| Variable            | Description                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `DEBUG`             | Enable debug logs. Set to `True` for verbose logging, `False` for production.                                                           |
+| `OPENAI_API_KEY`    | Your OpenAI API key for using GPT models. Required for AI features. Get it from [OpenAI](https://platform.openai.com/account/api-keys). |
+| `TELEGRAM_API_KEY`  | Your Telegram bot API key. Required to run the Telegram bot. Get it from [BotFather](https://core.telegram.org/bots#botfather).         |
+| `ALLOWED_HOSTS`     | Comma-separated list of allowed hosts for Django. Required for admin panel and production deployments.                                  |
+| `DATABASE_ENGINE`   | (Optional) Set to `postgres` to use PostgreSQL instead of SQLite.                                                                       |
+| `DATABASE_HOST`     | Database host (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_PORT`     | Database port (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_NAME`     | Database name (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_USER`     | Database user (used if `DATABASE_ENGINE=postgres`).                                                                                     |
+| `DATABASE_PASSWORD` | Database password (used if `DATABASE_ENGINE=postgres`).                                                                                 |
 
 **Note:**
+
 - If you do not set `DATABASE_ENGINE`, the app will use SQLite by default.
 - For production, it is recommended to use PostgreSQL and set all database variables.
 - The `.env.example` file contains comments and examples for each variable.
@@ -185,8 +213,8 @@ Below are the environment variables available in `.env.example`:
 
 Finance Bot can be integrated with:
 
-- WhatsApp *(integration details coming soon)*
-- Telegram *(see above for setup)*
+- WhatsApp _(integration details coming soon)_
+- Telegram _(see above for setup)_
 
 ---
 
@@ -194,14 +222,15 @@ Finance Bot can be integrated with:
 
 - For more advanced configuration, see the `finance_bot/settings.py` file.
 - Static files are collected to `/static` when running in Docker.
-- The admin panel is available at `/admin` (requires superuser setup).
-- **To create a superuser for admin access, run:**
+- The admin panel is available at `/admin` (requires [superuser](#how-to-create-a-superuser) setup).
 
-  ```sh
-  python manage.py createsuperuser
-  ```
+### How to create a superuser
 
-  Follow the prompts to set up your admin username, email, and password. For more details, see the [Django createsuperuser documentation](https://docs.djangoproject.com/en/stable/ref/django-admin/#createsuperuser) and the [Django admin site guide](https://docs.djangoproject.com/en/stable/ref/contrib/admin/).
+```sh
+python manage.py createsuperuser
+```
+
+Follow the prompts to set up your admin username, email, and password. For more details, see the [Django createsuperuser documentation](https://docs.djangoproject.com/en/stable/ref/django-admin/#createsuperuser) and the [Django admin site guide](https://docs.djangoproject.com/en/stable/ref/contrib/admin/).
 
 - For API documentation, DRF Spectacular is included (Swagger/OpenAPI support).
 

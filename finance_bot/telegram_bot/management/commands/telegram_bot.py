@@ -1,36 +1,96 @@
+import logging
 import os
 import telebot
 
 from django.core.management import BaseCommand
-from finance_bot.logging import get_logger
-from finance_bot.langchain_bot.agent import FinanceAgent
-from finance_bot.telegram_bot import middlewares
+
+from finance_bot.finance.agent import FinanceAgent
 from finance_bot.telegram_bot.models import TelegramUserSettings
+from finance_bot.users.models import User, UserInteraction
+from finance_bot.telegram_bot.handlers import (
+    finish_registration,
+    is_pending_registration,
+    start_registration,
+)
 
 
 TELEGRAM_API_KEY = os.environ.get("TELEGRAM_API_KEY")
 
 bot = telebot.TeleBot(TELEGRAM_API_KEY)
-
-middleware_manager = middlewares.MiddlewareManager()
-middleware_manager.register(middlewares.RateLimitMiddleware(bot))
-middleware_manager.register(middlewares.UserInteractionMiddleware(bot))
-
 agent = FinanceAgent()
+
+
+def rate_limit_exceeded(user_id: str) -> bool:
+    user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id).first()
+    if not user_settings.rate_limit_enabled:
+        return False
+    
+    message_count = UserInteraction.objects.filter(
+        user=user_settings.user,
+        interaction_type=UserInteraction.InteractionType.MESSAGE,
+        # Assuming you want a time frame validation
+        # created_at__gte=timezone.now() - timedelta(seconds=self.time_frame),
+    ).count()
+    if message_count >= user_settings.rate_limit:
+        return True
+    return False
+
+
+def save_interaction(user_id: str, message: str, response: str):
+    user = User.objects.filter(pk=user_id).first()
+    if not user:
+        return
+
+    user_interaction = UserInteraction.objects.create(
+        user=user,
+        source="telegram",
+        interaction_type=UserInteraction.InteractionType.MESSAGE,
+        interaction_data=message,
+    )
+
+    # This is the answer from the AI
+    UserInteraction.objects.create(
+        user=user,
+        source="telegram",
+        interaction_type=UserInteraction.InteractionType.RESPONSE,
+        interaction_data=response,
+        parent=user_interaction,
+    )
 
 
 @bot.message_handler(func=lambda msg: True)
 def handle_message(message):
-    can_continue = middleware_manager.execute(message.chat.id, message.from_user.id, message.text)
-    if not can_continue:
+    user_telegram_id = message.from_user.id
+
+    if rate_limit_exceeded(user_telegram_id):
+        bot.send_message(
+            message.chat.id,
+            "Você atingiu o limit de mensagens permitidas. Tente novamente mais tarde.",
+        )
         return
 
-    telegram_user_settings = TelegramUserSettings.objects.filter(telegram_id=message.from_user.id).first()
-    if telegram_user_settings is None:
-        bot.send_message(message.chat.id, "Please setup your account first.")
+    if message == '/cadastro':
+        response = start_registration(str(user_telegram_id))
+        bot.send_message(message.chat.id, response)
+        return
+    
+    if is_pending_registration(user_telegram_id):
+        response = finish_registration(str(user_telegram_id), message.text)
+        bot.send_message(message.chat.id, response)
         return
 
-    response = agent.invoke(telegram_user_settings.user.id, message.from_user.first_name, message.text)
+    user_id = (TelegramUserSettings.objects
+        .filter(telegram_id=user_telegram_id)
+        .first()
+        .user
+        .pk)
+
+    response = agent.invoke({
+        'user_id': str(user_id),
+        'message': message.text,
+    })
+
+    save_interaction(user_id, message.text, response)
     bot.send_message(message.chat.id, response)
 
 
@@ -38,7 +98,7 @@ class Command(BaseCommand):
     help = "Telegram bot"
 
     def handle(self, *args, **kwargs):
-        logger = get_logger("MrBuffet Bot")
+        logger = logging.getLogger("MrBuffet Bot")
 
         try:
             logger.info("Mr Buffet says hi.")
