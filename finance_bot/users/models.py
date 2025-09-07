@@ -2,6 +2,28 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
+class UserManager(BaseUserManager):
+    """
+    Custom user manager to handle user creation with email as the unique identifier.
+    """
+
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        if not password:
+            raise ValueError('The Password field must be set for superusers')
+        return self.create_user(email, password, is_superuser=True, is_staff=True, **extra_fields)
+
+
 class User(AbstractUser):
     """
     User model to store user information.
@@ -15,6 +37,8 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    objects = UserManager()
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.email})'
