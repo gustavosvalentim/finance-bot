@@ -8,6 +8,7 @@ class AgentSettingsToUserInline(admin.StackedInline):
 
 
 class AgentSettingsAdmin(admin.ModelAdmin):
+    list_display = ('model', 'is_default',)
     inlines = [AgentSettingsToUserInline]
 
 

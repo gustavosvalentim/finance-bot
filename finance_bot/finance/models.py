@@ -13,7 +13,7 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
     def __str__(self):
-        return f"{self.user} - {self.name}"
+        return self.name
 
     def save(self, *args, **kwargs):
         self.normalized_name = self.name.upper()
