@@ -123,30 +123,17 @@ python manage.py migrate
 
 ## ▶️ Running the Bot
 
+> Before running the bot, follow the instructions on [How to create a superuser](#how-to-create-a-superuser).
+
 ### Local Interactive Shell (Langchain Agent)
 
 You can interact with the AI agent directly from the command line using the `langchain_chat` management command. This is useful for testing, debugging, or quick interactions without needing a messaging client.
 
-**Basic Usage**
-
-Run the following command to start the interactive shell:
-
 ```sh
-python manage.py langchain_chat
+python manage.py langchain_chat --user-id="<your_user_id>"
 ```
 
-- This will start a local shell where you can interact with the AI agent.
-- By default, it uses the `USER_ID` from your `.env` file.
-
-**Advanced Usage with Command-Line Arguments**
-
-You can also specify the user ID and name directly as command-line arguments. This is useful for testing different user contexts without changing your `.env` file.
-
-```sh
-python manage.py langchain_chat --user-id="<your_user_id>" --user-name="<your_user_name>"
-```
-
-- Replace `<your_user_id>` and `<your_user_name>` with the desired values.
+- Replace `<your_user_id>` with the desired values.
 - Type your messages and receive AI-powered responses. Type `bye`, `exit`, or `quit` to exit the shell.
 
 ### Telegram Bot
@@ -203,10 +190,8 @@ Below are the environment variables available in `.env.example`:
 
 | Variable            | Description                                                                                                                             |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `USER_ID`           | The default user ID for the `langchain_chat` command if not provided as an argument. Example: `1`                                       |
 | `DEBUG`             | Enable debug logs. Set to `True` for verbose logging, `False` for production.                                                           |
 | `OPENAI_API_KEY`    | Your OpenAI API key for using GPT models. Required for AI features. Get it from [OpenAI](https://platform.openai.com/account/api-keys). |
-| `AGENT_USE_MEMORY`  | Set to `True` to enable agent memory (helps with long conversations, but may use more tokens).                                          |
 | `TELEGRAM_API_KEY`  | Your Telegram bot API key. Required to run the Telegram bot. Get it from [BotFather](https://core.telegram.org/bots#botfather).         |
 | `ALLOWED_HOSTS`     | Comma-separated list of allowed hosts for Django. Required for admin panel and production deployments.                                  |
 | `DATABASE_ENGINE`   | (Optional) Set to `postgres` to use PostgreSQL instead of SQLite.                                                                       |
@@ -237,14 +222,15 @@ Finance Bot can be integrated with:
 
 - For more advanced configuration, see the `finance_bot/settings.py` file.
 - Static files are collected to `/static` when running in Docker.
-- The admin panel is available at `/admin` (requires superuser setup).
-- **To create a superuser for admin access, run:**
+- The admin panel is available at `/admin` (requires [superuser](#how-to-create-a-superuser) setup).
 
-  ```sh
-  python manage.py createsuperuser
-  ```
+### How to create a superuser
 
-  Follow the prompts to set up your admin username, email, and password. For more details, see the [Django createsuperuser documentation](https://docs.djangoproject.com/en/stable/ref/django-admin/#createsuperuser) and the [Django admin site guide](https://docs.djangoproject.com/en/stable/ref/contrib/admin/).
+```sh
+python manage.py createsuperuser
+```
+
+Follow the prompts to set up your admin username, email, and password. For more details, see the [Django createsuperuser documentation](https://docs.djangoproject.com/en/stable/ref/django-admin/#createsuperuser) and the [Django admin site guide](https://docs.djangoproject.com/en/stable/ref/contrib/admin/).
 
 - For API documentation, DRF Spectacular is included (Swagger/OpenAPI support).
 

@@ -6,7 +6,13 @@ from django.core.management import BaseCommand
 
 from finance_bot.finance.agent import FinanceAgent
 from finance_bot.telegram_bot.models import TelegramUserSettings
-from finance_bot.users.models import User, UserInteraction
+from finance_bot.users.models import UserInteraction
+from telegram_bot.handlers import (
+    finish_registration,
+    is_pending_registration,
+    start_registration,
+)
+
 
 TELEGRAM_API_KEY = os.environ.get("TELEGRAM_API_KEY")
 
@@ -52,75 +58,40 @@ def save_interaction(user_id: str, message: str, response: str):
     )
 
 
-pending_registrations = {}
-
-
 @bot.message_handler(func=lambda msg: True)
 def handle_message(message):
-    if rate_limit_exceeded(message.from_user.id):
+    user_id = message.from_user.id
+
+    if rate_limit_exceeded(user_id):
         bot.send_message(
             message.chat.id,
             "Você atingiu o limit de mensagens permitidas. Tente novamente mais tarde.",
         )
-
-    if message == '/register':
-        pending_registrations[message.from_user.id] = True
-        bot.send_message(
-            message.chat.id,
-            "Por favor, envie seu número de celular para se registrar.",
-        )
         return
     
-    if pending_registrations.get(message.from_user.id):
-        phone_number = message.text
-        if not phone_number.startswith('+') or not phone_number[1:].isdigit():
-            bot.send_message(
-                message.chat.id,
-                "Número de celular inválido. Por favor, envie um número no formato +1234567890.",
-            )
-            return
-        
-        if TelegramUserSettings.objects.filter(telegram_id=message.from_user.id).exists():
-            bot.send_message(
-                message.chat.id,
-                "Você já está registrado.",
-            )
-            pending_registrations.pop(message.from_user.id)
-            return
+    is_user_configured = TelegramUserSettings.objects.filter(telegram_id=user_id).exists()
 
-        user = User.objects.filter(phone_number=phone_number).first()
-        if not user:
-            bot.send_message(
-                message.chat.id,
-                "Número de celular não encontrado. Por favor, registre-se no site primeiro.",
-            )
-            pending_registrations.pop(message.from_user.id)
-            return
-
-        TelegramUserSettings.objects.create(
-            user=user,
-            telegram_id=message.from_user.id,
-            phone_number=phone_number,
-        )
-        bot.send_message(
-            message.chat.id,
-            "Registro concluído com sucesso!",
-        )
-        pending_registrations.pop(message.from_user.id)
+    if not is_user_configured and message == '/register':
+        response = start_registration(str(user_id))
+        bot.send_message(message.chat.id, response)
+        return
+    
+    if is_pending_registration(user_id):
+        response = finish_registration(str(user_id), message.text)
+        bot.send_message(message.chat.id, response)
         return
 
-    telegram_user_settings = TelegramUserSettings.objects.filter(telegram_id=message.from_user.id).first()
-    if telegram_user_settings is None:
+    if not is_user_configured:
         bot.send_message(message.chat.id, "Por favor, configure sua conta primeiro.")
         return
 
     response = agent.invoke({
-        'user_id': str(message.from_user.id),
+        'user_id': str(user_id),
         'message': message.text,
     })
 
     bot.send_message(message.chat.id, response)
-    save_interaction(message.from_user.id, message.text, response)
+    save_interaction(user_id, message.text, response)
 
 
 class Command(BaseCommand):

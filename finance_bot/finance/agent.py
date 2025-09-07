@@ -88,10 +88,10 @@ class FinanceAgent:
         message = args.get('message')
 
         if user_id is None or user_id.strip() == '':
-            raise ValueError("User ID cannot be empty.")
+            raise ValueError("User ID can't be empty.")
 
         if message is None or message.strip() == '':
-            raise ValueError("Message cannot be empty.")
+            raise ValueError("Message can't be empty.")
 
         agent_config = self._get_agent_configuration(user_id)
         agent = self._get_agent(agent_config)
