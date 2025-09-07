@@ -7,7 +7,7 @@ from django.core.management import BaseCommand
 from finance_bot.finance.agent import FinanceAgent
 from finance_bot.telegram_bot.models import TelegramUserSettings
 from finance_bot.users.models import UserInteraction
-from telegram_bot.handlers import (
+from finance_bot.telegram_bot.handlers import (
     finish_registration,
     is_pending_registration,
     start_registration,
