@@ -60,33 +60,31 @@ def save_interaction(user_id: str, message: str, response: str):
 
 @bot.message_handler(func=lambda msg: True)
 def handle_message(message):
-    telegram_user_id = message.from_user.id
+    user_telegram_id = message.from_user.id
 
-    if rate_limit_exceeded(telegram_user_id):
+    if rate_limit_exceeded(user_telegram_id):
         bot.send_message(
             message.chat.id,
             "Você atingiu o limit de mensagens permitidas. Tente novamente mais tarde.",
         )
         return
-    
-    telegram_user_queryset = TelegramUserSettings.objects.filter(telegram_id=telegram_user_id)
-    is_user_configured = telegram_user_queryset.exists()
 
-    if not is_user_configured and message == '/register':
-        response = start_registration(str(telegram_user_id))
+    if message == '/cadastro':
+        response = start_registration(str(user_telegram_id))
         bot.send_message(message.chat.id, response)
         return
     
-    if is_pending_registration(telegram_user_id):
-        response = finish_registration(str(telegram_user_id), message.text)
+    if is_pending_registration(user_telegram_id):
+        response = finish_registration(str(user_telegram_id), message.text)
         bot.send_message(message.chat.id, response)
         return
 
-    if not is_user_configured:
-        bot.send_message(message.chat.id, "Por favor, configure sua conta primeiro.")
-        return
-    
-    user_id = telegram_user_queryset.first().user.pk
+    user_id = (TelegramUserSettings.objects
+        .filter(telegram_id=user_telegram_id)
+        .first()
+        .user
+        .pk)
+
     response = agent.invoke({
         'user_id': str(user_id),
         'message': message.text,

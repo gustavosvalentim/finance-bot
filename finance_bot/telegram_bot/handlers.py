@@ -13,22 +13,21 @@ def start_registration(user_id: str) -> str:
         if user_id in pending_registrations_dict:
             return "Você ja iniciou o processo de registro. Por favor, envie seu número de celular."
         pending_registrations_dict[user_id] = True
-
     return "Por favor, envie seu número de celular para se registrar."
 
 
 def is_pending_registration(user_id: str) -> bool:
-    with pending_registrations_lock:
-        return pending_registrations_dict.get(user_id, False)
+    telegram_user_settings = TelegramUserSettings.objects.filter(telegram_id=user_id)
+    return not telegram_user_settings.exists()
 
 
 def finish_registration(user_id: str, phone_number: str) -> str:
     with pending_registrations_lock:
         if user_id not in pending_registrations_dict:
-            return "Você não iniciou o processo de registro. Por favor, envie /register para começar."
+            return "Você não iniciou o processo de registro. Por favor, envie */cadastro* para começar."
 
     if not phone_number.startswith('+') or not phone_number[1:].isdigit():
-        return "Número de celular inválido. Por favor, envie um número no formato +1234567890."
+        return "Número de celular inválido. Por favor, envie um número no formato +556199999999."
     
     if TelegramUserSettings.objects.filter(telegram_id=user_id).exists():
         with pending_registrations_lock:
@@ -44,7 +43,6 @@ def finish_registration(user_id: str, phone_number: str) -> str:
     TelegramUserSettings.objects.create(
         user=user,
         telegram_id=user_id,
-        phone_number=phone_number,
     )
 
     with pending_registrations_lock:
